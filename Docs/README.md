@@ -38,8 +38,8 @@ a documented rule.
 
 ### Design
 
-- [Study Experience](Design/StudyExperience.md) — Planned home menu, quiz, question browsing, and
-  session-resume behavior.
+- [Study Experience](Design/StudyExperience.md) — Implemented home menu, quiz, question browsing,
+  and session-resume behavior.
 - [UI Architecture](Design/UIArchitecture.md) — gluestack-ui, NativeWind `className`, shared
   controls, icon, and state conventions.
 

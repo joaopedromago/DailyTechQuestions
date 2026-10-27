@@ -86,3 +86,10 @@
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
 }
+
+@layer base {
+  input::placeholder {
+    color: rgb(var(--muted-foreground));
+    opacity: 1;
+  }
+}

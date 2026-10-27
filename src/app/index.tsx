@@ -1,14 +1,16 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { Appearance, Platform, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/shared/button';
 import { Text } from '@/components/ui/text';
+import { useQuizSession } from '@/features/quiz/quiz-session';
 
 export default function HomeScreen() {
+  const { isHydrated, persistenceError, session } = useQuizSession();
   const systemColorScheme = useColorScheme();
   const [webColorScheme, setWebColorScheme] = useState<'light' | 'dark' | null>(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return null;
@@ -21,7 +23,7 @@ export default function HomeScreen() {
   const targetColorScheme = isDark ? 'light' : 'dark';
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" style={{ flex: 1 }}>
       <Box className="flex-1 justify-center bg-background px-6 py-8">
         <Box className="mx-auto w-full max-w-xl gap-8">
           <Box className="gap-2">
@@ -78,12 +80,18 @@ export default function HomeScreen() {
             <Button
               accessibilityLabel="Continue"
               className="w-full"
-              isDisabled
+              isDisabled={!isHydrated || !session}
               size="lg"
               variant="outline"
+              onPress={() => router.push('/quiz/play' as Href)}
             >
               <ButtonText>Continue</ButtonText>
             </Button>
+            {persistenceError ? (
+              <Text accessibilityRole="alert" className="text-sm text-destructive">
+                Saved quiz progress could not be read or written.
+              </Text>
+            ) : null}
           </Box>
         </Box>
       </Box>

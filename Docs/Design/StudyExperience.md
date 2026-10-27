@@ -1,6 +1,6 @@
 # Study Experience
 
-Status: Partially implemented
+Status: Implemented
 
 This contract describes the intended local study experience. Current implementation status and
 question catalog ownership are summarized in [Current Application](../Systems/CurrentApp.md).
@@ -12,7 +12,8 @@ AI Tools. It does not ask learners to submit answers, grade responses, award poi
 Questions can be reviewed alone or discussed with another person.
 
 The home menu presents three actions: **Start Random Quiz**, **View Questions**, and **Continue**.
-Continue is always visible but disabled when there is no unfinished quiz.
+Continue is always visible, remains disabled until session hydration completes, and is enabled only
+when an unfinished quiz is available.
 
 The menu also offers a light/dark appearance toggle that switches to the other appearance. Use a
 Material Icon to identify the mode action and expose its target appearance in the accessible
@@ -28,12 +29,14 @@ Starting a quiz includes every catalog question in the selected categories, shuf
 and preserves that ordered list for the session. The source catalog is never mutated and every
 selected question appears once in that quiz.
 
-The shared question view displays the question first. **See answer** reveals `shortAnswer`; **See
-full answer** reveals `longAnswer` and clickable `referenceUrls`. In quiz mode, **Next Question** is
-shown after the full answer is revealed. A left swipe advances and a right swipe goes back, even
-when answers are still hidden. Previous/next controls are also available. Mobile system back moves
-to the previous quiz position, or returns to the menu from the first question. A menu-return action
-is available from the question view.
+The shared question view displays the question first. **See answer** expands the answer panel and
+shows the question category and `shortAnswer`; the same control becomes **Hide answer** and
+collapses the quick and full answers. **See full answer** reveals `longAnswer` and clickable
+`referenceUrls` inside the expanded panel. In quiz mode, **Next Question** (or **Finish Quiz** on
+the last question) is shown after the full answer is revealed. Previous and next controls and
+horizontal swipes also navigate while answers are hidden. Mobile system back moves to the previous
+quiz position, or returns to the menu from the first question. Returning to the menu keeps the
+unfinished snapshot.
 
 After the last question, show a completion state with a return-to-menu action and clear the
 unfinished quiz session.
@@ -45,17 +48,19 @@ and search with a case-insensitive, accent-insensitive substring query over `que
 `shortAnswer`. The category selection and text query combine; an empty query shows all questions in
 the selected categories.
 
-Selecting a result opens the shared question view with the same progressive answer and reference
-behavior. In this mode, the navigation action is **Return to list** instead of **Next Question**.
-Returning to the list preserves its category and search filters. On web, provide navigation
-controls and use browser history; mobile uses touch gestures and system back as described above.
+Selecting a result opens the shared question view with the same collapsible answer and reference
+behavior. Browse detail routes use the question's source catalog index. In this mode, the navigation
+action is **Return to list** instead of quiz controls. Returning to the list preserves its category
+and search filters. Browser history and mobile system back return to the list; a right swipe also
+returns from detail to the list.
 
 ## Continue
 
-Keep at most one unfinished quiz snapshot on the device. It contains the selected categories, exact
-ordered question data, and current question position. Continue restores that snapshot and position,
-including after the app is closed and reopened. Answer-reveal state is not part of the snapshot and
-starts collapsed after a question change or resume.
+Keep at most one unfinished quiz snapshot on the device in AsyncStorage. It contains the selected
+categories, exact ordered question data, and current question position. Continue restores that
+snapshot and position, including after the app is closed and reopened. Invalid saved data is removed
+and treated as no session. Answer-reveal state is not part of the snapshot and starts collapsed
+after a question change or resume.
 
 Returning to the menu or closing the app keeps the snapshot. Starting a new quiz replaces it;
 finishing a quiz clears it. There is no Continue session after completion.

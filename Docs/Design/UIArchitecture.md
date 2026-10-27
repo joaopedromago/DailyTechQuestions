@@ -1,6 +1,6 @@
 # UI Architecture
 
-Status: Partially implemented
+Status: Implemented
 
 This contract defines the intended UI and code organization for the study app. Current runtime
 behavior is described in [Current Application](../Systems/CurrentApp.md).
@@ -32,16 +32,14 @@ areas, gestures, system back, and opening reference URLs.
 - Keep gluestack-generated components in `src/components/ui/` and app-wide shared components in
   `src/components/`.
 - Place reusable buttons, inputs, and checkboxes in `src/components/shared/button/`,
-  `src/components/shared/input/`, and `src/components/shared/checkbox/`. Each control should expose
-  deliberate variants and be reused by feature screens. These folders are scaffolded; no shared
-  control components have been created yet.
+  `src/components/shared/input/`, and `src/components/shared/checkbox/`. Each control exposes
+  deliberate variants and is reused by feature screens.
 - Keep study feature screens, behavior, and feature-specific hooks in `src/features/questions/` and
   `src/features/quiz/`.
 - Keep the static question catalog and its shared types in `src/data/`.
 
-The root layout owns the gluestack provider. Add the shared quiz-session provider there when quiz
-session state is implemented. The home route replaces the starter tab experience with the study
-menu; Expo Router routes compose feature screens for question browsing and quiz flows.
+The root layout owns the gluestack and shared quiz-session providers. The home route presents the
+study menu; Expo Router routes compose feature screens for question browsing and quiz flows.
 
 ## State and persistence ownership
 
@@ -52,4 +50,5 @@ serialized session in AsyncStorage, following [Expo's storage guidance](https://
 
 Hydrate the session before enabling Continue. Update the stored position as quiz navigation occurs.
 Question answer disclosure and question-list search/category filters remain screen-local UI state;
-answer disclosure does not persist. Keep list filters available when returning from question detail.
+answer disclosure does not persist. The list remains mounted under its detail route so filters are
+available when returning.
