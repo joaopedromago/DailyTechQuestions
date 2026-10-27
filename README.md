@@ -1,49 +1,55 @@
-# Welcome to your Expo app 👋
+# I Want To Be Ready For Interview
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An Expo and React Native app built with TypeScript and Expo Router.
 
-## Get started
+## Requirements
 
-1. Install dependencies
+- Node.js 22, within the versions supported by `package.json`
+- npm
+- For local Android builds: Android Studio, Java 17, Android SDK Platform 37.0 (Android 17 preview), Build Tools 37.0.0, NDK 27.1.12297006, and Platform Tools
 
-   ```bash
-   npm install
-   ```
+## Install and run
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [Expo Router](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm ci
+npm start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+`npm run android` generates the native Android project from Expo config when needed, builds the development app, and launches it on an emulator or connected device. Expo's Continuous Native Generation (CNG) keeps `android/` and `ios/` generated; configure native behavior in `app.json` or config plugins.
 
-### Other setup steps
+## Quality checks
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```sh
+npm run lint
+npm run format:check
+npm run typecheck
+npm test
+npm run doctor
+```
 
-## Learn more
+Use `npm run test:watch` while developing and `npm run test:coverage` to inspect coverage.
 
-To learn more about this project, look at the following resources:
+## Android builds
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, guides and references.
-- [Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Learn by building a complete app.
+`npm run android:build` generates the Android project if needed and creates a release Android App Bundle at `android/app/build/outputs/bundle/release/app-release.aab`. `npm run android:build:debug` creates a debug APK. EAS profiles are configured for development builds, installable preview APKs, and production Android App Bundles:
+
+```sh
+npm run eas:build:android:preview
+npm run eas:build:android:production
+```
+
+EAS cloud builds require an Expo account and project association. See [Expo's Android environment setup](https://docs.expo.dev/get-started/set-up-your-environment/) and [EAS Build setup](https://docs.expo.dev/build/setup/).
+
+## GitHub Android releases
+
+Pushing a semantic version tag such as `v1.2.3` starts the Android release workflow. The build waits for approval through the `android-release` GitHub Environment before any job steps run. After approval, it builds a signed APK with the `github-release` EAS profile, sets the app version from the tag, increments the remote Android version code, then creates a GitHub Release with the APK and its SHA-256 checksum. Prerelease tags such as `v1.2.3-beta.1` create prereleases. The EAS CLI version is pinned to `26.0.0` in `eas.json` and the release workflow.
+
+Before the first tag:
+
+1. Sign in to Expo and run `npx eas-cli@26.0.0 project:init` to link this app to an EAS project, then commit the generated `extra.eas.projectId` in `app.json`.
+2. In the repository’s **Settings → Environments**, create an environment named `android-release`. Add required reviewer(s), enable prevention of self-review where available, and restrict deployments to version tags matching `v*`.
+3. Create an [Expo access token](https://docs.expo.dev/accounts/programmatic-access/) and add it as an [environment secret](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) named `EXPO_TOKEN` in `android-release`. Remove any repository-level `EXPO_TOKEN` secret so the token is available only through the protected environment.
+4. Add a GitHub tag ruleset targeting `v*` and restrict who can create, update, or delete those tags to release maintainers. This prevents an unreviewed tag push from selecting arbitrary source for a release.
+5. Check out the reviewed commit, then push its version tag, for example `git tag v1.0.0 && git push origin v1.0.0`.
+
+The release workflow only runs for version tags. Regular pushes and pull requests do not run project CI workflows.

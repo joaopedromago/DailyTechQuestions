@@ -270,3 +270,12 @@ Temporary Items
 # End of https://www.toptal.com/developers/gitignore/api/react,reactnative
 
 vscode
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Expo Continuous Native Generation output
+/android/
+/ios/

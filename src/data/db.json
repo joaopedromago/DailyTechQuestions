@@ -1,0 +1,1096 @@
+[
+  {
+    "question": "What is the difference between a shallow copy and a deep copy?",
+    "shortAnswer": "A shallow copy duplicates only the outer container; nested object references are shared. A deep copy duplicates supported nested data so the copied graph is independent.",
+    "longAnswer": "A shallow copy duplicates only the outer container; nested object references are shared. A deep copy duplicates supported nested data so the copied graph is independent. To make the answer complete, cover these points: Explain that spread and Object.assign are shallow, show why nested mutation can affect both values, and mention the limits of structuredClone and JSON stringify/parse. Common pitfall: Do not call object spread a deep clone or assume one generic clone method preserves every value and behavior.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy",
+      "https://developer.mozilla.org/en-US/docs/Glossary/Deep_copy",
+      "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone"
+    ]
+  },
+  {
+    "question": "When would you use structuredClone instead of JSON stringify/parse?",
+    "shortAnswer": "Use structuredClone when the values are within the structured clone algorithm's supported types and you need supported nested or circular data copied. JSON round-tripping is only suitable for JSON-safe data with no cycles or special values.",
+    "longAnswer": "Use structuredClone when the values are within the structured clone algorithm's supported types and you need supported nested or circular data copied. JSON round-tripping is only suitable for JSON-safe data with no cycles or special values. To make the answer complete, cover these points: State the limitations: functions and DOM nodes cannot be cloned, and custom object behavior or descriptors are not a universal preservation guarantee. Consider explicit mapping when domain semantics matter. Common pitfall: Do not use cloning as a substitute for validating untrusted data or designing an immutable state update.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone",
+      "https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm"
+    ]
+  },
+  {
+    "question": "What does Babel do in a React/TypeScript build?",
+    "shortAnswer": "Babel parses and transforms source code using plugins and presets; it can transform JSX and modern JavaScript syntax for configured targets. With its TypeScript preset it strips type syntax but does not type-check.",
+    "longAnswer": "Babel parses and transforms source code using plugins and presets; it can transform JSX and modern JavaScript syntax for configured targets. With its TypeScript preset it strips type syntax but does not type-check. To make the answer complete, cover these points: Distinguish source transformation from bundling, type checking, and runtime polyfills, and explain that a framework or bundler may invoke Babel as part of its pipeline. Common pitfall: Do not say Babel runs TypeScript types in production or that syntax transformation automatically adds every missing browser API.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://babeljs.io/docs/",
+      "https://babeljs.io/docs/presets/",
+      "https://babeljs.io/docs/babel-plugin-transform-typescript"
+    ]
+  },
+  {
+    "question": "What does Partial<T> mean, and what are its limitations?",
+    "shortAnswer": "Partial<T> makes the top-level properties of T optional in the type system; it does not recursively transform nested properties or validate values at runtime.",
+    "longAnswer": "Partial<T> makes the top-level properties of T optional in the type system; it does not recursively transform nested properties or validate values at runtime. To make the answer complete, cover these points: For an update API, combine it with Pick or a dedicated patch type to expose only allowed fields, and define how omission, undefined, and null differ. Common pitfall: Do not assume Partial<T> means a valid or safe patch, or that it deep-clones or changes an object.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+    ]
+  },
+  {
+    "question": "How does Exclude<T, U> differ from Omit<T, K> and Extract<T, U>?",
+    "shortAnswer": "Exclude removes matching members from a union; Extract keeps matching union members; Omit removes selected keys from an object type.",
+    "longAnswer": "Exclude removes matching members from a union; Extract keeps matching union members; Omit removes selected keys from an object type. To make the answer complete, cover these points: Use a small union example for Exclude/Extract and an object example for Omit; all are compile-time transformations. Common pitfall: Do not confuse the union-member filter Exclude with the object-key utility Omit.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+    ]
+  },
+  {
+    "question": "How do keyof T and T[K] help write a type-safe property helper?",
+    "shortAnswer": "Constrain K with K extends keyof T; then T[K] expresses that the result type matches the chosen key's property type.",
+    "longAnswer": "Constrain K with K extends keyof T; then T[K] expresses that the result type matches the chosen key's property type. To make the answer complete, cover these points: Explain how a generic key constraint prevents invalid property names and preserves the input/output type relationship. Common pitfall: Do not widen the key to a plain string if the helper should accept only keys of T.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/2/keyof-types.html",
+      "https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+    ]
+  },
+  {
+    "question": "How would you derive the awaited return type of an async function?",
+    "shortAnswer": "Use Awaited<ReturnType<typeof fn>> to derive the function's return type and recursively unwrap Promise-like layers.",
+    "longAnswer": "Use Awaited<ReturnType<typeof fn>> to derive the function's return type and recursively unwrap Promise-like layers. To make the answer complete, cover these points: Mention that ReturnType works from a function type and that these utilities affect static checking only. Common pitfall: Do not confuse a Promise's type with the value available after await.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+    ]
+  },
+  {
+    "question": "When should you use map instead of forEach?",
+    "shortAnswer": "Use map when each input should produce a value in a new array; use forEach for a side effect where no transformed array is needed.",
+    "longAnswer": "Use map when each input should produce a value in a new array; use forEach for a side effect where no transformed array is needed. To make the answer complete, cover these points: Mention that map returns an array and callbacks should return the mapped value, while forEach returns undefined. Common pitfall: Do not call map and ignore its result just to loop over items.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach"
+    ]
+  },
+  {
+    "question": "Why can mutating a shallow copy still mutate the original data?",
+    "shortAnswer": "The outer object is new, but nested objects are still the same references, so mutating one through the copy is visible through the source.",
+    "longAnswer": "The outer object is new, but nested objects are still the same references, so mutating one through the copy is visible through the source. To make the answer complete, cover these points: Show a nested object example and explain how to copy every changed level for an immutable update. Common pitfall: Do not assume a new top-level object means all descendants were copied.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy",
+      "https://react.dev/learn/updating-objects-in-state"
+    ]
+  },
+  {
+    "question": "What is the difference between var, let, and const?",
+    "shortAnswer": "var is function-scoped and can be redeclared; let and const are block-scoped and live in the temporal dead zone before initialization. const prevents rebinding, not mutation of an object it references.",
+    "longAnswer": "var is function-scoped and can be redeclared; let and const are block-scoped and live in the temporal dead zone before initialization. const prevents rebinding, not mutation of an object it references. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim that const makes an object deeply immutable or that a let binding is usable before its declaration.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const"
+    ]
+  },
+  {
+    "question": "What is a closure, and where is it useful?",
+    "shortAnswer": "A closure is a function together with access to lexical variables from the scope where it was created. It supports callbacks, private state, and function factories; captured values can also retain data longer than expected.",
+    "longAnswer": "A closure is a function together with access to lexical variables from the scope where it was created. It supports callbacks, private state, and function factories; captured values can also retain data longer than expected. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not describe closures as a snapshot of every outer variable; they preserve lexical access to bindings.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures"
+    ]
+  },
+  {
+    "question": "How does JavaScript choose the value of this?",
+    "shortAnswer": "For ordinary functions, this is determined by how the function is called (or explicitly bound). Arrow functions capture this lexically and do not create their own this.",
+    "longAnswer": "For ordinary functions, this is determined by how the function is called (or explicitly bound). Arrow functions capture this lexically and do not create their own this. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume this always points to the object where a function was defined.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions"
+    ]
+  },
+  {
+    "question": "How do promises and the event loop affect async code order?",
+    "shortAnswer": "Synchronous code runs on the current stack; promise reactions run as microtasks after that stack, while scheduled tasks such as timers run through task queues. Exact ordering across host APIs depends on the runtime.",
+    "longAnswer": "Synchronous code runs on the current stack; promise reactions run as microtasks after that stack, while scheduled tasks such as timers run through task queues. Exact ordering across host APIs depends on the runtime. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not say async makes CPU-heavy work parallel or that every timer has an exact execution time.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
+      "https://tc39.es/ecma262/"
+    ]
+  },
+  {
+    "question": "How should errors from async functions be handled?",
+    "shortAnswer": "An async function returns a Promise; use await inside try/catch when handling locally, or let the rejected Promise propagate to a caller that owns the failure policy. Avoid silently swallowing errors.",
+    "longAnswer": "An async function returns a Promise; use await inside try/catch when handling locally, or let the rejected Promise propagate to a caller that owns the failure policy. Avoid silently swallowing errors. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not leave rejected Promises unobserved or turn every error into a success-shaped fallback without logging and intent.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+    ]
+  },
+  {
+    "question": "What is the difference between ES modules and CommonJS?",
+    "shortAnswer": "ES modules use import/export with static module structure and are standardized by ECMAScript. CommonJS uses require/module.exports, historically common in Node. Interoperability and loading behavior depend on package and runtime configuration.",
+    "longAnswer": "ES modules use import/export with static module structure and are standardized by ECMAScript. CommonJS uses require/module.exports, historically common in Node. Interoperability and loading behavior depend on package and runtime configuration. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume the two module systems have identical resolution, loading, or top-level execution behavior.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://nodejs.org/api/modules.html",
+      "https://nodejs.org/api/esm.html"
+    ]
+  },
+  {
+    "question": "When would you use a TypeScript interface versus a type alias?",
+    "shortAnswer": "Both can describe object shapes. Interfaces can be extended and declaration-merged; type aliases can express unions, intersections, primitives, tuples, and other type expressions. Choose for the contract and team conventions.",
+    "longAnswer": "Both can describe object shapes. Interfaces can be extended and declaration-merged; type aliases can express unions, intersections, primitives, tuples, and other type expressions. Choose for the contract and team conventions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim one is universally faster, safer, or always preferred.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/2/objects.html",
+      "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+    ]
+  },
+  {
+    "question": "Why prefer unknown to any for untrusted values?",
+    "shortAnswer": "unknown accepts any input but requires narrowing before operations, so callers must prove what the value is. any disables many checks and can spread unsafe assumptions.",
+    "longAnswer": "unknown accepts any input but requires narrowing before operations, so callers must prove what the value is. any disables many checks and can spread unsafe assumptions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not cast an API response to a domain type merely to silence the compiler.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any",
+      "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+    ]
+  },
+  {
+    "question": "What problem do generics solve?",
+    "shortAnswer": "Generics let an API relate input and output types while preserving useful information across different callers, such as function first<T>(items: T[]): T | undefined. Constraints can require only the capabilities an implementation needs.",
+    "longAnswer": "Generics let an API relate input and output types while preserving useful information across different callers, such as function first<T>(items: T[]): T | undefined. Constraints can require only the capabilities an implementation needs. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use a generic when a concrete type is clearer, or add unconstrained any inside a generic API.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+    ]
+  },
+  {
+    "question": "How do discriminated unions help model API or UI states?",
+    "shortAnswer": "Give each variant a literal tag such as status: 'loading' | 'success' | 'error'; a switch narrows the fields available for that case and can support exhaustive checking.",
+    "longAnswer": "Give each variant a literal tag such as status: 'loading' | 'success' | 'error'; a switch narrows the fields available for that case and can support exhaustive checking. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not model mutually exclusive states as many independent booleans that permit impossible combinations.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions"
+    ]
+  },
+  {
+    "question": "Does TypeScript validate JSON at runtime?",
+    "shortAnswer": "No. TypeScript types are erased from emitted JavaScript. Parse untrusted JSON as unknown, validate its shape at the boundary with explicit checks or a runtime schema library, then convert it to a trusted domain type.",
+    "longAnswer": "No. TypeScript types are erased from emitted JavaScript. Parse untrusted JSON as unknown, validate its shape at the boundary with explicit checks or a runtime schema library, then convert it to a trusted domain type. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume a compile-time type annotation validates network, database, environment, or user input.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://github.com/microsoft/TypeScript/wiki/FAQ#what-is-type-erasure",
+      "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+    ]
+  },
+  {
+    "question": "What are utility types such as Pick, Omit, and Partial for?",
+    "shortAnswer": "They derive a type from another type, reducing duplication for related contracts. Use them when the relationship is meaningful, but define explicit input/output types when API semantics differ.",
+    "longAnswer": "They derive a type from another type, reducing duplication for related contracts. Use them when the relationship is meaningful, but define explicit input/output types when API semantics differ. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use Partial<T> as a substitute for a carefully designed patch contract; it may allow invalid combinations.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+    ]
+  },
+  {
+    "question": "What does structural typing mean in TypeScript?",
+    "shortAnswer": "A value is generally assignable when it has the required compatible members, regardless of its declared name. This makes object contracts flexible; nominal-like distinctions can be modeled with branded types when needed.",
+    "longAnswer": "A value is generally assignable when it has the required compatible members, regardless of its declared name. This makes object contracts flexible; nominal-like distinctions can be modeled with branded types when needed. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat an interface declaration as a runtime class or security check.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+    ]
+  },
+  {
+    "question": "How do you make optional and nullable data safe?",
+    "shortAnswer": "Enable strict checking, represent missing and null values deliberately, narrow before use, and make API contracts distinguish absent fields from explicit nulls where that matters.",
+    "longAnswer": "Enable strict checking, represent missing and null values deliberately, narrow before use, and make API contracts distinguish absent fields from explicit nulls where that matters. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use non-null assertions as a default fix for uncertain data.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/tsconfig/#strictNullChecks",
+      "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+    ]
+  },
+  {
+    "question": "What is prototype-based inheritance in JavaScript?",
+    "shortAnswer": "Objects can delegate property lookup through a prototype chain. class syntax is a convenient abstraction over JavaScript's prototype-based object model, with its own rules for method definitions and super.",
+    "longAnswer": "Objects can delegate property lookup through a prototype chain. class syntax is a convenient abstraction over JavaScript's prototype-based object model, with its own rules for method definitions and super. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim JavaScript classes create a separate classical inheritance runtime model.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain",
+      "https://tc39.es/ecma262/"
+    ]
+  },
+  {
+    "question": "How does tree shaking work, and how is it different from code splitting?",
+    "shortAnswer": "Tree shaking removes code that the build determines is unused; code splitting separates code into chunks that can be loaded independently.",
+    "longAnswer": "Tree shaking removes code that the build determines is unused; code splitting separates code into chunks that can be loaded independently. To make the answer complete, cover these points: Explain why statically analyzable imports and exports help, how side-effect metadata affects what can be removed, and why tree shaking is commonly part of a production build. Common pitfall: Do not mark a package as side-effect-free if it imports CSS or runs required initialization code; check the production output and behavior.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://webpack.js.org/guides/tree-shaking/"
+    ]
+  },
+  {
+    "question": "How does Map differ from WeakMap, and when would you choose each?",
+    "shortAnswer": "Use Map when you need iterable key/value storage, any key type, or a count. Use WeakMap for object-associated data that should not keep the key alive.",
+    "longAnswer": "Use Map when you need iterable key/value storage, any key type, or a count. Use WeakMap for object-associated data that should not keep the key alive. To make the answer complete, cover these points: Compare key types, strong versus weak key references, iteration and size; give an example such as caching metadata for DOM nodes in a WeakMap. Common pitfall: Do not expect to enumerate a WeakMap, know its size, or rely on exactly when garbage collection removes an entry.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
+    ]
+  },
+  {
+    "question": "Explain useRef. How is it different from useState?",
+    "shortAnswer": "useRef(initialValue) returns a stable object with a mutable current property. Changing it persists the value but does not trigger rendering; changing state schedules a render.",
+    "longAnswer": "useRef(initialValue) returns a stable object with a mutable current property. Changing it persists the value but does not trigger rendering; changing state schedules a render. To make the answer complete, cover these points: Give a use case that does not affect visible output, such as storing a timeout ID, and contrast it with a screen value that belongs in state. Common pitfall: Do not describe refs as a second state mechanism or expect React to update the UI when current changes.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/useRef",
+      "https://react.dev/learn/referencing-values-with-refs#differences-between-refs-and-state"
+    ]
+  },
+  {
+    "question": "How do you use useRef to focus an input?",
+    "shortAnswer": "Create the ref, attach it to the input with ref={inputRef}, then call inputRef.current?.focus() from an event handler or an Effect after the element has committed.",
+    "longAnswer": "Create the ref, attach it to the input with ref={inputRef}, then call inputRef.current?.focus() from an event handler or an Effect after the element has committed. To make the answer complete, cover these points: Explain that React assigns the DOM node to current and clears it when the node is removed; mention that direct DOM access is an escape hatch for imperative browser behavior. Common pitfall: Do not query the DOM during render or use a ref when ordinary state and props can express the UI.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/manipulating-the-dom-with-refs"
+    ]
+  },
+  {
+    "question": "Why should you avoid reading or writing ref.current during render?",
+    "shortAnswer": "Render should stay pure and predictable. A mutable ref can change outside React's render cycle, so reading or changing it during render can make the output depend on hidden, unsynchronized state.",
+    "longAnswer": "Render should stay pure and predictable. A mutable ref can change outside React's render cycle, so reading or changing it during render can make the output depend on hidden, unsynchronized state. To make the answer complete, cover these points: Use an event handler or Effect for imperative work, and use state for data that determines the screen. Common pitfall: Do not mutate a ref during render to try to force React to observe a change.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/useRef#caveats",
+      "https://react.dev/learn/keeping-components-pure"
+    ]
+  },
+  {
+    "question": "How does a React update get from state change to DOM change?",
+    "shortAnswer": "A state, prop, or consumed context update can make React call components again to calculate the next UI. React then reconciles the result and commits only the necessary host changes; a render does not guarantee a DOM mutation.",
+    "longAnswer": "A state, prop, or consumed context update can make React call components again to calculate the next UI. React then reconciles the result and commits only the necessary host changes; a render does not guarantee a DOM mutation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not say that every render recreates the whole DOM or that the Virtual DOM automatically makes an app fast.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/render-and-commit",
+      "https://react.dev/learn/state-as-a-snapshot"
+    ]
+  },
+  {
+    "question": "When should you use an Effect, an event handler, or a derived value?",
+    "shortAnswer": "Use an Effect to synchronize with an external system after rendering. Put work caused by a specific user action in that event handler, and calculate values from existing props or state during render when possible.",
+    "longAnswer": "Use an Effect to synchronize with an external system after rendering. Put work caused by a specific user action in that event handler, and calculate values from existing props or state during render when possible. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use Effects to copy props into state, derive simple values, or handle a click that already has an event handler.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/you-might-not-need-an-effect",
+      "https://react.dev/learn/separating-events-from-effects"
+    ]
+  },
+  {
+    "question": "How do Effect cleanup and dependencies prevent stale work?",
+    "shortAnswer": "List every reactive value the Effect reads. Clean up subscriptions, timers, and requests before the Effect re-synchronizes or the component unmounts; cancel or ignore obsolete asynchronous results so earlier requests cannot overwrite newer UI.",
+    "longAnswer": "List every reactive value the Effect reads. Clean up subscriptions, timers, and requests before the Effect re-synchronizes or the component unmounts; cancel or ignore obsolete asynchronous results so earlier requests cannot overwrite newer UI. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not silence dependency lint rules to force an Effect to run once; fix the dependency or move non-reactive logic out of the Effect.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/lifecycle-of-reactive-effects",
+      "https://react.dev/reference/react/useEffect"
+    ]
+  },
+  {
+    "question": "Why use a functional state updater?",
+    "shortAnswer": "State is a snapshot for the current render. When the next value depends on the pending previous value, pass an updater such as setCount(current => current + 1) so queued updates compose correctly.",
+    "longAnswer": "State is a snapshot for the current render. When the next value depends on the pending previous value, pass an updater such as setCount(current => current + 1) so queued updates compose correctly. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not expect a state variable to change immediately after calling its setter in the same event handler.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/useState",
+      "https://react.dev/learn/queueing-a-series-of-state-updates"
+    ]
+  },
+  {
+    "question": "Why do list keys matter, and when can an index key cause a bug?",
+    "shortAnswer": "A key lets React match an item with its prior identity as a list changes. Use a stable ID from the data so local state, focus, and DOM identity remain attached to the right item.",
+    "longAnswer": "A key lets React match an item with its prior identity as a list changes. Use a stable ID from the data so local state, focus, and DOM identity remain attached to the right item. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use array indexes for lists that can reorder, insert, or delete items; do not generate random keys during render.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/rendering-lists",
+      "https://react.dev/learn/preserving-and-resetting-state"
+    ]
+  },
+  {
+    "question": "When would you choose local state, Context, an external store, or a query cache?",
+    "shortAnswer": "Keep state near its owner; use Context or a client store for shared client state, and a query cache for remote server state with freshness and invalidation rules.",
+    "longAnswer": "Keep state near its owner; use Context or a client store for shared client state, and a query cache for remote server state with freshness and invalidation rules. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat Context, Redux, and query caches as interchangeable ways to store every value.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/managing-state",
+      "https://tanstack.com/query/latest/docs/framework/react/overview"
+    ]
+  },
+  {
+    "question": "When do memo, useMemo, and useCallback help?",
+    "shortAnswer": "They can skip repeated work or preserve identity when a measured render path benefits, such as a memoized child receiving a stable callback. Profile first and keep dependencies correct.",
+    "longAnswer": "They can skip repeated work or preserve identity when a measured render path benefits, such as a memoized child receiving a stable callback. Profile first and keep dependencies correct. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not add them everywhere or rely on cached values for correctness.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/memo",
+      "https://react.dev/reference/react/useMemo",
+      "https://react.dev/reference/react/useCallback"
+    ]
+  },
+  {
+    "question": "How would you make a large clinician review queue fast without harming usability?",
+    "shortAnswer": "Measure first; paginate or virtualize large result sets, debounce remote search, keep filters in clear state, cancel or ignore stale requests, and keep row identity stable. Preserve keyboard navigation, focus, screen-reader labels, and visible loading, empty, and error states.",
+    "longAnswer": "Measure first; paginate or virtualize large result sets, debounce remote search, keep filters in clear state, cancel or ignore stale requests, and keep row identity stable. Preserve keyboard navigation, focus, screen-reader labels, and visible loading, empty, and error states. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not virtualize a short list by default or optimize away accessible interactions.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/Profiler",
+      "https://tanstack.com/virtual/latest/docs/introduction",
+      "https://web.dev/articles/vitals"
+    ]
+  },
+  {
+    "question": "What is the difference between Suspense and an Error Boundary?",
+    "shortAnswer": "Suspense renders a fallback when a supported child is not ready. An Error Boundary provides UI for errors thrown while rendering descendants; it does not replace handling failures in event handlers or arbitrary async callbacks.",
+    "longAnswer": "Suspense renders a fallback when a supported child is not ready. An Error Boundary provides UI for errors thrown while rendering descendants; it does not replace handling failures in event handlers or arbitrary async callbacks. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat a Suspense fallback as an error handler or assume every data-fetching library suspends automatically.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/Suspense",
+      "https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+    ]
+  },
+  {
+    "question": "What changes when a React framework uses Server and Client Components?",
+    "shortAnswer": "Server Components can render on the server without adding their component code to the client bundle. Client Components are needed for browser APIs, state, Effects, and event handlers; framework boundaries determine data flow and hydration.",
+    "longAnswer": "Server Components can render on the server without adding their component code to the client bundle. Client Components are needed for browser APIs, state, Effects, and event handlers; framework boundaries determine data flow and hydration. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume every component is a Client Component or send secrets and protected data into a client bundle.",
+    "category": "React",
+    "referenceUrls": [
+      "https://nextjs.org/docs/app/getting-started/server-and-client-components",
+      "https://react.dev/reference/rsc/server-components"
+    ]
+  },
+  {
+    "question": "How would you test a clinician's approve/reject flow?",
+    "shortAnswer": "Test what a clinician can observe: accessible controls, validation, pending and failure states, repeated clicks, and the resulting UI. Keep authorization and audit requirements enforced on the server too.",
+    "longAnswer": "Test what a clinician can observe: accessible controls, validation, pending and failure states, repeated clicks, and the resulting UI. Keep authorization and audit requirements enforced on the server too. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not test only implementation details or treat a disabled button as the security boundary.",
+    "category": "React",
+    "referenceUrls": [
+      "https://testing-library.com/docs/react-testing-library/intro/",
+      "https://testing-library.com/docs/guiding-principles/"
+    ]
+  },
+  {
+    "question": "How can Node.js serve many I/O requests while JavaScript runs on one main thread?",
+    "shortAnswer": "The event loop runs JavaScript callbacks while the runtime and operating system handle asynchronous I/O; callbacks are scheduled when work completes. A long synchronous callback still blocks other JavaScript work on that event loop.",
+    "longAnswer": "The event loop runs JavaScript callbacks while the runtime and operating system handle asynchronous I/O; callbacks are scheduled when work completes. A long synchronous callback still blocks other JavaScript work on that event loop. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not equate non-blocking I/O with parallel JavaScript execution or assume every operation is handled identically by libuv.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop",
+      "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"
+    ]
+  },
+  {
+    "question": "How would you handle CPU-heavy work in a Node service?",
+    "shortAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation.",
+    "longAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not start an unbounded worker per request or use worker threads for routine network and database I/O.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/worker_threads.html",
+      "https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop"
+    ]
+  },
+  {
+    "question": "What is stream backpressure, and why does it matter?",
+    "shortAnswer": "Streams let data flow incrementally. A writable stream's write() can signal that the producer should pause; waiting for capacity to drain keeps a fast producer from overwhelming memory or a slower destination.",
+    "longAnswer": "Streams let data flow incrementally. A writable stream's write() can signal that the producer should pause; waiting for capacity to drain keeps a fast producer from overwhelming memory or a slower destination. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not buffer an unbounded file or response entirely in memory when it can be streamed.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/stream.html"
+    ]
+  },
+  {
+    "question": "How should a Node HTTP service shut down on SIGTERM?",
+    "shortAnswer": "Stop accepting new requests, mark readiness unhealthy, allow in-flight work a bounded time to finish, close database and queue clients, then force-close remaining resources at a deadline and exit with the right status.",
+    "longAnswer": "Stop accepting new requests, mark readiness unhealthy, allow in-flight work a bounded time to finish, close database and queue clients, then force-close remaining resources at a deadline and exit with the right status. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not call process.exit() immediately and discard active work or buffered logs.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/process.html#signal-events",
+      "https://nodejs.org/api/http.html#serverclosecallback"
+    ]
+  },
+  {
+    "question": "How do you handle asynchronous errors in a request handler?",
+    "shortAnswer": "Make the framework boundary await the handler or explicitly forward rejections to centralized error middleware. Classify expected validation/auth/not-found errors separately from unexpected failures; log a safe correlation ID and return a stable response.",
+    "longAnswer": "Make the framework boundary await the handler or explicitly forward rejections to centralized error middleware. Classify expected validation/auth/not-found errors separately from unexpected failures; log a safe correlation ID and return a stable response. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not expose stack traces, tokens, or protected health data in error responses or logs.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/errors.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "What should an API validate before applying a mutation?",
+    "shortAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape.",
+    "longAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat client-side validation or a TypeScript type as server-side validation.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "How would you make a webhook receiver reliable?",
+    "shortAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing.",
+    "longAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not trust a parsed body before signature verification or assume providers deliver every event exactly once and in order.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.stripe.com/webhooks/signature",
+      "https://docs.stripe.com/webhooks#event-delivery-behaviors"
+    ]
+  },
+  {
+    "question": "How do retries, idempotency, and an outbox fit together?",
+    "shortAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously.",
+    "longAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously. To make the answer complete, cover these points: Set a maximum attempt count or deadline, retry at one deliberate layer, treat repeated delivery as normal, and make the consumer idempotent. Common pitfall: Do not retry validation failures forever, reuse one key for different request intent, or assume a database commit and message publish are one atomic operation.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_limit_retries.html",
+      "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html"
+    ]
+  },
+  {
+    "question": "How do you isolate tenants in a multi-tenant service?",
+    "shortAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes.",
+    "longAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not accept an arbitrary tenant ID from the browser as proof of access or rely only on UI filtering.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "What should you inspect when a PostgreSQL query is slow?",
+    "shortAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use.",
+    "longAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use. To make the answer complete, cover these points: Explain how an index should match measured filters, joins, ordering, and selectivity; check composite index order and the cost that indexes add to writes and storage. Common pitfall: Do not add indexes blindly or assume an index beats a sequential scan for a small table or a query that returns most rows.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://www.postgresql.org/docs/current/sql-explain.html",
+      "https://www.postgresql.org/docs/current/indexes-types.html"
+    ]
+  },
+  {
+    "question": "How should a cache handle tenant-scoped data?",
+    "shortAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes.",
+    "longAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes. To make the answer complete, cover these points: Describe cache-aside, TTLs, cache stampedes, invalidation races, and how permission changes or revocation affect cached results. Common pitfall: Do not share a cache entry across tenants because a resource ID looks unique, or assume TTL gives immediate consistency.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
+      "https://tanstack.com/query/latest/docs/framework/react/guides/query-keys"
+    ]
+  },
+  {
+    "question": "How would you design a background job for a patient nudge?",
+    "shortAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending.",
+    "longAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending. To make the answer complete, cover these points: Assume at-least-once delivery: make processing idempotent, persist the result before acknowledging, bound retries, and move poison messages to a dead-letter queue. Common pitfall: Do not let a duplicate or delayed job bypass clinician approval, opt-out state, or a later cancellation.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html",
+      "https://hl7.org/fhir/auditevent.html"
+    ]
+  },
+  {
+    "question": "What makes logs and traces useful without leaking sensitive data?",
+    "shortAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs.",
+    "longAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not log full request bodies or tokens by default, especially for health data.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "https://opentelemetry.io/docs/languages/js/"
+    ]
+  },
+  {
+    "question": "How do you prevent one slow dependency from taking down the service?",
+    "shortAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown.",
+    "longAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown. To make the answer complete, cover these points: Explain closed/open/half-open states, safe degraded behavior, monitoring, and why retries need caps and jitter so they do not amplify an outage. Common pitfall: Do not retry every failure at several layers or treat the breaker as a replacement for timeouts and idempotency.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html",
+      "https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html"
+    ]
+  },
+  {
+    "question": "What do transaction isolation levels protect, and when would you use a stronger level?",
+    "shortAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried.",
+    "longAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried. To make the answer complete, cover these points: Compare PostgreSQL Read Committed, Repeatable Read, and Serializable; mention constraints or row locks for specific invariants, short transaction scope, and retrying serialization failures. Common pitfall: Do not assume a transaction makes an external API call atomic with the database commit.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "https://www.postgresql.org/docs/current/explicit-locking.html"
+    ]
+  },
+  {
+    "question": "What does at-least-once delivery mean for a message consumer?",
+    "shortAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order.",
+    "longAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order. To make the answer complete, cover these points: Use a stable message ID or unique business key, make the side effect idempotent, persist success before acknowledging, and send repeatedly failing messages to a dead-letter queue. Common pitfall: Do not claim the queue guarantees exactly-once business effects just because it suppresses or deduplicates some messages.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html"
+    ]
+  },
+  {
+    "question": "How do read replicas affect read-after-write consistency?",
+    "shortAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data.",
+    "longAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data. To make the answer complete, cover these points: Route freshness-critical reads to the primary or use a database-specific mechanism to wait until a replica has applied the needed change; monitor lag and explain the scaling and availability trade-off. Common pitfall: Do not assume a successful primary commit is immediately visible on every replica.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html",
+      "https://www.postgresql.org/docs/current/runtime-config-replication.html"
+    ]
+  },
+  {
+    "question": "What creates a hot partition, and how would you address it?",
+    "shortAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused.",
+    "longAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused. To make the answer complete, cover these points: Inspect hot keys and workload distribution, then redesign for higher-cardinality distribution; for a proven single-key hotspot, consider write sharding and the read fan-out it requires. Common pitfall: Do not add shards without accounting for query aggregation, cross-shard updates, and migration complexity.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-uniform-load.html",
+      "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/throttling-key-range-limit-exceeded-mitigation.html"
+    ]
+  },
+  {
+    "question": "When would you use optimistic versus pessimistic concurrency control?",
+    "shortAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized.",
+    "longAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized. To make the answer complete, cover these points: Explain conditional updates or version columns versus row locks, how conflicts are returned or retried, and the blocking/deadlock costs of locks. Common pitfall: Do not silently overwrite a concurrent update or hold a row lock while waiting on a network call.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://www.postgresql.org/docs/current/explicit-locking.html",
+      "https://www.postgresql.org/docs/current/transaction-iso.html"
+    ]
+  },
+  {
+    "question": "How do you use a coding assistant without giving up engineering ownership?",
+    "shortAnswer": "Give it a bounded task and repository context, inspect its plan and diff, verify assumptions against source code and documentation, run the right checks, and own the final design and explanation.",
+    "longAnswer": "Give it a bounded task and repository context, inspect its plan and diff, verify assumptions against source code and documentation, run the right checks, and own the final design and explanation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat a fluent answer, generated test, or AI review as proof that the change is correct.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide",
+      "https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/overview"
+    ]
+  },
+  {
+    "question": "What belongs in a useful prompt for a code change?",
+    "shortAnswer": "State the desired outcome, relevant context, constraints and non-goals, likely files or interfaces, acceptance criteria, and how to report uncertainty. Ask for investigation before a risky implementation when requirements are unclear.",
+    "longAnswer": "State the desired outcome, relevant context, constraints and non-goals, likely files or interfaces, acceptance criteria, and how to report uncertainty. Ask for investigation before a risky implementation when requirements are unclear. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not paste secrets or unnecessary private data, and do not ask a vague multi-part prompt that hides acceptance criteria.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/code-generation",
+      "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide"
+    ]
+  },
+  {
+    "question": "When is autocomplete enough, and when is an agent workflow useful?",
+    "shortAnswer": "Use autocomplete for a small local edit; use an agent for a bounded task that benefits from repository search, multiple edits, and verification. Grant only the tools and access required, and review actions that affect files, commands, or external systems.",
+    "longAnswer": "Use autocomplete for a small local edit; use an agent for a bounded task that benefits from repository search, multiple edits, and verification. Grant only the tools and access required, and review actions that affect files, commands, or external systems. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not give broad permissions to an agent simply because it can complete a task faster.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/overview",
+      "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations"
+    ]
+  },
+  {
+    "question": "What is prompt injection, and how would you reduce its impact in a coding workflow?",
+    "shortAnswer": "Prompt injection is untrusted content attempting to redirect a model or agent. Treat issue text, webpages, logs, and repository content as data rather than authority; limit tools, permissions, secrets, network access, and side effects, and require review for consequential actions.",
+    "longAnswer": "Prompt injection is untrusted content attempting to redirect a model or agent. Treat issue text, webpages, logs, and repository content as data rather than authority; limit tools, permissions, secrets, network access, and side effects, and require review for consequential actions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume prompt wording alone can prevent injection or let untrusted content authorize tool calls.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations",
+      "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "What data should you give an AI coding tool?",
+    "shortAnswer": "Follow the employer's data policy and the specific tool's approved configuration. Prefer synthetic or redacted examples; never submit patient data, credentials, or proprietary code to an unapproved tool or account.",
+    "longAnswer": "Follow the employer's data policy and the specific tool's approved configuration. Prefer synthetic or redacted examples; never submit patient data, credentials, or proprietary code to an unapproved tool or account. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not infer that a vendor's general security claims authorize a particular PHI workflow; approval, contracts, settings, and operational safeguards matter.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://www.hhs.gov/hipaa/for-professionals/security/index.html",
+      "https://developers.openai.com/api/docs/guides/code-generation"
+    ]
+  },
+  {
+    "question": "How do you evaluate AI-generated code?",
+    "shortAnswer": "Use the same engineering evidence as other code: inspect the diff, check relevant behavior and edge cases, run type checks, tests, lint and build as appropriate, review dependencies and security, and add a regression test for the reported failure.",
+    "longAnswer": "Use the same engineering evidence as other code: inspect the diff, check relevant behavior and edge cases, run type checks, tests, lint and build as appropriate, review dependencies and security, and add a regression test for the reported failure. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not let the model's own explanation or self-review be the only evaluation.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations",
+      "https://developers.openai.com/api/docs/guides/code-generation"
+    ]
+  },
+  {
+    "question": "How would you compare two AI developer tools for a team?",
+    "shortAnswer": "Use representative, non-sensitive tasks and a rubric for correctness, maintainability, test quality, review effort, security, latency, cost, IDE/repository fit, and data controls. Keep humans responsible for acceptance and compare on more than one task.",
+    "longAnswer": "Use representative, non-sensitive tasks and a rubric for correctness, maintainability, test quality, review effort, security, latency, cost, IDE/repository fit, and data controls. Keep humans responsible for acceptance and compare on more than one task. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not choose only from a polished demo or one successful prompt; tool capabilities and policies change over time.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/code-generation",
+      "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations"
+    ]
+  },
+  {
+    "question": "How should an AI suggestion enter a health-product workflow?",
+    "shortAnswer": "Treat model output as an untrusted draft. Apply deterministic eligibility and safety rules, validate provenance and freshness, require clinician review where intended, and create an audit trail before any patient-facing action.",
+    "longAnswer": "Treat model output as an untrusted draft. Apply deterministic eligibility and safety rules, validate provenance and freshness, require clinician review where intended, and create an audit trail before any patient-facing action. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not let generated text independently determine clinical eligibility, bypass human approval, or silently trigger a send.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://www.hhs.gov/hipaa/for-professionals/security/index.html",
+      "https://hl7.org/fhir/auditevent.html"
+    ]
+  },
+  {
+    "question": "How would you describe an AI-assisted engineering example in an interview?",
+    "shortAnswer": "Explain the problem, why you used a tool, the context and constraints you provided, what it proposed, what you changed or rejected, how you verified the result, and the outcome you can support with evidence.",
+    "longAnswer": "Explain the problem, why you used a tool, the context and constraints you provided, what it proposed, what you changed or rejected, how you verified the result, and the outcome you can support with evidence. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not overstate AI's contribution or claim productivity gains you cannot substantiate.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide",
+      "https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/overview"
+    ]
+  },
+  {
+    "question": "What is a large language model (LLM)?",
+    "shortAnswer": "An LLM is a model trained to process and generate language. In common text-generation setups, it predicts likely next tokens from the current context; fluent output is not proof that a claim is true.",
+    "longAnswer": "An LLM is a model trained to process and generate language. In common text-generation setups, it predicts likely next tokens from the current context, so a fluent answer can still be wrong. Applications can ground responses in relevant source material and verify important claims instead of treating fluent output as evidence.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/concepts",
+      "https://developers.openai.com/api/docs/guides/text"
+    ]
+  },
+  {
+    "question": "What are tokens and a context window?",
+    "shortAnswer": "Tokens are the units a model processes. The context window is the token budget for the current request, including input and generated output; long context can increase cost and can still omit relevant information.",
+    "longAnswer": "Tokens are the units a model processes, and the context window is the budget for the current input and generated output. Select context for relevance, keep it within the model's limit, and recognize that long context can still bury or omit useful information.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/concepts",
+      "https://developers.openai.com/api/docs/guides/conversation-state"
+    ]
+  },
+  {
+    "question": "What is an embedding, and what does vector search return?",
+    "shortAnswer": "An embedding represents data as a vector whose geometry captures some semantic relationships. Vector search retrieves items near a query vector; similarity is a relevance signal, not proof that a result answers the question.",
+    "longAnswer": "An embedding represents data as a vector whose geometry captures some semantic relationships. Vector search retrieves nearby items, but similarity is only a relevance signal. Combining it with keyword search, enforcing tenant filters, and evaluating retrieval quality helps determine whether the results are useful.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/embeddings"
+    ]
+  },
+  {
+    "question": "What is retrieval-augmented generation (RAG)?",
+    "shortAnswer": "RAG retrieves relevant source material at query time and supplies it to a model to help generate a grounded response. A typical pipeline ingests and chunks documents, indexes them, retrieves passages, then generates an answer from those passages.",
+    "longAnswer": "RAG retrieves source material at query time and supplies it to a model to help generate a grounded response. Its pipeline commonly ingests and chunks documents, indexes them, retrieves passages, and generates an answer from those passages. Evaluate ingestion, permissions, chunking, retrieval, freshness, and generation separately, and expose the sources used.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/retrieval"
+    ]
+  },
+  {
+    "question": "How does RAG differ from fine-tuning?",
+    "shortAnswer": "RAG adds external context at inference time and is useful for changing or source-backed information. Fine-tuning updates model behavior using examples; it is not a substitute for retrieving frequently changing facts.",
+    "longAnswer": "RAG adds external context at inference time, making it useful for changing or source-backed information. Fine-tuning updates model behavior using examples and is not a substitute for retrieving frequently changing facts. For current clinic policy, start with retrieval; consider fine-tuning only when evaluation shows a stable behavior change is needed.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/retrieval",
+      "https://developers.openai.com/api/docs/guides/model-optimization"
+    ]
+  },
+  {
+    "question": "What makes a system an AI agent rather than a chatbot?",
+    "shortAnswer": "A chatbot mainly responds to turns. An agent uses a model to choose and coordinate actions, often through tools, within a bounded workflow with state, stop conditions, and guardrails.",
+    "longAnswer": "A chatbot mainly responds to turns, while an agent uses a model to choose and coordinate actions, often through tools, within a bounded workflow. An agent that can change data needs limited permissions, step limits, explicit stop conditions, and human handoff points for sensitive actions.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/tracks/building-agents"
+    ]
+  },
+  {
+    "question": "What is an agent loop, and how do you keep it bounded?",
+    "shortAnswer": "A loop commonly observes input, chooses an action or tool, receives a result, and continues until a stop condition. Bound it with a maximum number of steps, time and cost limits, explicit completion criteria, and safe failure handling.",
+    "longAnswer": "An agent loop observes input, chooses an action or tool, receives a result, and continues until a stop condition. Limit its steps, time, and cost, define completion criteria, and handle failures safely. If a tool repeatedly fails or completion is unclear, stop and request human direction rather than looping indefinitely.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/tracks/building-agents"
+    ]
+  },
+  {
+    "question": "What is tool or function calling?",
+    "shortAnswer": "The model returns a structured request for a named tool; application code validates and executes it, then returns the result to the model. The model's tool call is a proposal, not proof that the action ran or was authorized.",
+    "longAnswer": "The model returns a structured request for a named tool; application code validates and executes it, then returns the result to the model. Treat the call as a proposal, not proof of authorization or execution. Authentication, authorization, input validation, idempotency, and any required human approval belong in the application before side effects occur.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/function-calling"
+    ]
+  },
+  {
+    "question": "What is MCP, and what problem does it solve?",
+    "shortAnswer": "The Model Context Protocol standardizes how AI host applications connect to external context and capabilities. It is a protocol for integrations, not an LLM, agent, or replacement for every application API.",
+    "longAnswer": "The Model Context Protocol standardizes how AI host applications connect to external context and capabilities. A shared protocol can replace one-off connectors for every host and service, while remaining an integration protocol rather than an LLM, agent, or replacement for every application API.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://modelcontextprotocol.io/specification/2026-07-28"
+    ]
+  },
+  {
+    "question": "What are the MCP host, client, and server?",
+    "shortAnswer": "The host is the AI application; it can run client connections. Each MCP client connects to a server that exposes capabilities. MCP messages use JSON-RPC and the host mediates the model's access.",
+    "longAnswer": "The host is the AI application and may manage multiple client connections; each MCP client connects to a server that exposes capabilities. Messages use JSON-RPC, and the host mediates the model's access. This separation supports composition while keeping permissions and control at the host boundary.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://modelcontextprotocol.io/specification/2026-07-28/architecture/index"
+    ]
+  },
+  {
+    "question": "How do MCP tools, resources, and prompts differ?",
+    "shortAnswer": "Tools expose executable actions or queries; resources expose contextual data; prompts expose reusable interaction templates. They have different control and invocation patterns.",
+    "longAnswer": "Tools expose executable actions or queries, resources expose contextual data, and prompts expose reusable interaction templates. For example, a coding assistant might use a tool to search files, a resource to read project guidance, and a prompt to start a review. Each capability has a different control and invocation pattern.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://modelcontextprotocol.io/specification/2026-07-28/server"
+    ]
+  },
+  {
+    "question": "How does MCP differ from a REST API?",
+    "shortAnswer": "REST commonly defines an application's HTTP resources and operations. MCP standardizes how an AI host discovers and uses context and capabilities; an MCP server may call or wrap existing REST APIs.",
+    "longAnswer": "REST commonly defines an application's HTTP resources and operations, while MCP standardizes how an AI host discovers and uses context and capabilities. An MCP server can call or wrap an existing REST API. Connect an application directly for its own explicit service workflow; add MCP when compatible AI clients need a shared integration surface.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://modelcontextprotocol.io/specification/2026-07-28"
+    ]
+  },
+  {
+    "question": "How would you secure an MCP server or agent tool?",
+    "shortAnswer": "Use least privilege, authenticate and authorize every action, validate inputs and outputs, limit scope and execution, and require clear user approval for sensitive actions. Treat tool descriptions and returned content as untrusted unless verified.",
+    "longAnswer": "Use least privilege, authenticate and authorize each action, validate inputs and outputs, limit execution, and treat returned content as untrusted. A read-only lookup can use narrow read scopes; sending a message or changing a patient record needs explicit write authorization and any required user approval.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://modelcontextprotocol.io/specification/2026-07-28"
+    ]
+  },
+  {
+    "question": "How do prompt injection and hallucination differ?",
+    "shortAnswer": "Prompt injection is untrusted content that tries to change the system's instructions or actions. A hallucination is unsupported or incorrect generated content. RAG can introduce untrusted text, so retrieved documents must not gain authority to bypass permissions.",
+    "longAnswer": "Prompt injection is untrusted content that tries to change a model's instructions or actions; a hallucination is unsupported or incorrect generated content. Retrieved documents can contain injection attempts, so treat them as data, keep instructions separate, and enforce permissions in the tool layer before any write.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/agent-builder-safety",
+      "https://modelcontextprotocol.io/specification/2026-07-28"
+    ]
+  },
+  {
+    "question": "How would you evaluate a RAG or agent feature?",
+    "shortAnswer": "Use a representative, versioned dataset and score the parts of the workflow separately: retrieval relevance, answer correctness and grounding, tool choice and execution, policy compliance, latency, and cost. Include regressions and human review for high-impact cases.",
+    "longAnswer": "Use a representative, versioned dataset and measure retrieval relevance, answer correctness and grounding, tool choice and execution, policy compliance, latency, and cost. Inspect retrieval results separately from generated answers: missing evidence points to retrieval, while relevant evidence with an incorrect answer points to generation. Include regressions and human review for high-impact cases.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/agent-evals"
+    ]
+  },
+  {
+    "question": "When should a product use deterministic code instead of an LLM?",
+    "shortAnswer": "Use deterministic rules for exact policies, calculations, permissions, and outcomes that must be reproducible and auditable. Use an LLM where language flexibility helps, then validate the result and keep a human approval step when the action has clinical impact.",
+    "longAnswer": "Use deterministic rules for exact policies, calculations, permissions, and outcomes that must be reproducible and auditable. Use an LLM where language flexibility helps, then validate its output and keep a human approval step when an action has clinical impact. Keep the model suggestion as a draft until the required checks and approval are complete.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/safety-best-practices"
+    ]
+  },
+  {
+    "question": "What does temperature change, and does low temperature make answers correct?",
+    "shortAnswer": "Temperature changes the randomness of token selection in supported generation setups. Lower randomness can make outputs more consistent, but it does not verify facts or make an answer correct.",
+    "longAnswer": "Temperature changes the randomness of token selection in supported generation setups. Lower randomness can make outputs more consistent, but it does not verify facts or make answers correct. Compare settings on a representative evaluation set before changing production behavior.",
+    "category": "AI",
+    "referenceUrls": [
+      "https://developers.openai.com/api/docs/guides/text"
+    ]
+  },
+  {
+    "question": "How do you derive time and space complexity from a code snippet?",
+    "shortAnswer": "Define input size, count the dominant work as input grows, include data-structure operation costs, and state whether the bound is worst-case, average-case, or amortized.",
+    "longAnswer": "Define input size, count the dominant work as input grows, include data-structure operation costs, and state whether the bound is worst-case, average-case, or amortized. Separate auxiliary space from space occupied by the input. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "What do O(1), O(log n), O(n), O(n log n), O(n²), and O(2ⁿ) mean?",
+    "shortAnswer": "They describe how resource use grows as input size grows: constant work, halving search, one pass, efficient comparison sorting, all pairs, and enumerating subsets are common examples.",
+    "longAnswer": "They describe how resource use grows as input size grows: constant work, halving search, one pass, efficient comparison sorting, all pairs, and enumerating subsets are common examples. Big O ignores constant factors and lower-order terms. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "How do Big O, Big Theta, and Big Omega differ?",
+    "shortAnswer": "Big O is an asymptotic upper bound, Big Omega a lower bound, and Big Theta a tight bound when both upper and lower bounds hold.",
+    "longAnswer": "Big O is an asymptotic upper bound, Big Omega a lower bound, and Big Theta a tight bound when both upper and lower bounds hold. Big O is often used informally for worst-case complexity, but the notation alone does not mean worst case. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "How do you analyze nested loops when the inner loop depends on the outer loop?",
+    "shortAnswer": "Count the total iterations rather than multiplying loop counts blindly.",
+    "longAnswer": "Count the total iterations rather than multiplying loop counts blindly. A triangular loop can be quadratic, while a loop that doubles or halves a variable often contributes logarithmic work. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "What is amortized complexity?",
+    "shortAnswer": "It bounds the average cost per operation over a sequence, even when some individual operations are expensive.",
+    "longAnswer": "It bounds the average cost per operation over a sequence, even when some individual operations are expensive. Appending to a dynamic array is typically amortized O(1) because occasional resizing is spread across many appends. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "Compare common sorting algorithms and their trade-offs.",
+    "shortAnswer": "Insertion, selection, and bubble sort are generally O(n²); insertion works well for small or nearly sorted input.",
+    "longAnswer": "Insertion, selection, and bubble sort are generally O(n²); insertion works well for small or nearly sorted input. Merge sort is stable with O(n log n) time and extra memory; quicksort is usually in-place with average O(n log n) but worst O(n²); heapsort has O(n log n) worst-case time and is in-place but not stable. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "What is a stable sort, and when does stability matter?",
+    "shortAnswer": "A stable sort preserves the original relative order of items with equal keys.",
+    "longAnswer": "A stable sort preserves the original relative order of items with equal keys. It matters when sorting by multiple fields in stages or when equal-key order already carries meaning. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "Why is O(n log n) a lower bound for comparison-based sorting?",
+    "shortAnswer": "A comparison sort must distinguish among the n! possible input orders; representing all of them requires a decision tree with enough leaves, whose height is on the order of n log n.",
+    "longAnswer": "A comparison sort must distinguish among n! possible input orders. Its decision tree needs enough leaves to represent those orders, which requires a height on the order of n log n. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "When does binary search work, and what bugs commonly appear?",
+    "shortAnswer": "The search range must be ordered by the same comparison rule, and efficient access to its middle is needed.",
+    "longAnswer": "The search range must be ordered by the same comparison rule, and efficient access to its middle is needed. Watch boundary updates, duplicate values, empty input, and overflow in languages with fixed-width integers. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "When would you choose an array over a linked list?",
+    "shortAnswer": "Arrays provide O(1) indexed access and usually good memory locality.",
+    "longAnswer": "Arrays provide O(1) indexed access and usually good memory locality. A linked list has O(n) indexed access; insertion or deletion is O(1) only when the target node or its predecessor is already known. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "How does a hash table work, and what affects its complexity?",
+    "shortAnswer": "A hash maps keys to buckets or slots.",
+    "longAnswer": "A hash maps keys to buckets or slots. Lookup, insert, and delete are expected O(1) with a good hash distribution, but collisions or adversarial inputs can make operations O(n); resizing and load factor affect performance. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/30searching/"
+    ]
+  },
+  {
+    "question": "When would you use a Set instead of repeatedly searching an array?",
+    "shortAnswer": "A Set provides expected O(1) membership tests, while searching an array is O(n).",
+    "longAnswer": "A Set provides expected O(1) membership tests, while searching an array is O(n). A sorted array can support O(log n) search but makes updates more expensive. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/30searching/"
+    ]
+  },
+  {
+    "question": "What are the differences between a stack and a queue?",
+    "shortAnswer": "A stack is last-in, first-out; a queue is first-in, first-out.",
+    "longAnswer": "A stack is last-in, first-out; a queue is first-in, first-out. Call stacks, undo history, breadth-first traversal, and task scheduling are common examples. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "What is a heap, and when is a priority queue useful?",
+    "shortAnswer": "A binary heap supports efficient access to the highest- or lowest-priority item: peek is O(1), and insert or remove is O(log n).",
+    "longAnswer": "A binary heap supports efficient access to the highest- or lowest-priority item: peek is O(1), and insert or remove is O(log n). It does not keep all elements fully sorted. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "What is the difference between a binary search tree and a balanced search tree?",
+    "shortAnswer": "A binary search tree orders keys for search.",
+    "longAnswer": "A binary search tree orders keys for search. If it becomes skewed, operations can degrade to O(n); balanced variants maintain height near log n and guarantee logarithmic operations. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/30searching/"
+    ]
+  },
+  {
+    "question": "How do breadth-first search and depth-first search differ?",
+    "shortAnswer": "BFS explores by distance layers and finds a shortest path in an unweighted graph; DFS follows a path deeply before backtracking.",
+    "longAnswer": "BFS explores by distance layers and finds a shortest path in an unweighted graph; DFS follows a path deeply before backtracking. With adjacency lists, both take O(V + E) time. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "When would you use an adjacency list versus an adjacency matrix?",
+    "shortAnswer": "An adjacency list uses O(V + E) space and suits sparse graphs.",
+    "longAnswer": "An adjacency list uses O(V + E) space and suits sparse graphs. An adjacency matrix uses O(V²) space but supports constant-time edge lookup and can suit dense graphs. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "What makes a recursive algorithm correct, and how can recursion fail?",
+    "shortAnswer": "A recursive solution needs a base case and progress toward it.",
+    "longAnswer": "A recursive solution needs a base case and progress toward it. Deep recursion can exhaust the call stack; an iterative implementation may be safer when depth is unbounded. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "What is the NAND truth table, and why is NAND called functionally complete?",
+    "shortAnswer": "NAND outputs 0 only when both inputs are 1.",
+    "longAnswer": "NAND outputs 0 only when both inputs are 1. NAND gates can be combined to construct NOT, AND, OR, and therefore any Boolean function. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://www.nand2tetris.org/project01"
+    ]
+  },
+  {
+    "question": "How do XOR and OR differ?",
+    "shortAnswer": "OR is true when at least one input is true; XOR is true when the inputs differ, so it is false when both inputs are true.",
+    "longAnswer": "OR is true when at least one input is true; XOR is true when the inputs differ, so it is false when both inputs are true. XOR is useful for parity and bit toggling. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://www.nand2tetris.org/project01"
+    ]
+  },
+  {
+    "question": "What are De Morgan's laws?",
+    "shortAnswer": "They state that NOT (A AND B) equals (NOT A) OR (NOT B), and NOT (A OR B) equals (NOT A) AND (NOT B).",
+    "longAnswer": "They state that NOT (A AND B) equals (NOT A) OR (NOT B), and NOT (A OR B) equals (NOT A) AND (NOT B). They help simplify Boolean expressions and reason about active-low logic. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://www.nand2tetris.org/project01"
+    ]
+  },
+  {
+    "question": "How do logical operators differ from bitwise operators?",
+    "shortAnswer": "Logical operators combine truth values and may short-circuit; bitwise operators work on individual bits.",
+    "longAnswer": "Logical operators combine truth values and may short-circuit; bitwise operators work on individual bits. Explain the language's coercion and precedence rules when answering a language-specific version. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_AND"
+    ]
+  },
+  {
+    "question": "How do process and thread differ?",
+    "shortAnswer": "A process provides an execution and memory-isolation boundary; threads are execution paths within a process and commonly share its address space.",
+    "longAnswer": "A process provides an execution and memory-isolation boundary; threads are execution paths within a process and commonly share its address space. This makes communication easier but shared state introduces synchronization risks. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://pages.cs.wisc.edu/~remzi/OSTEP/"
+    ]
+  },
+  {
+    "question": "How do concurrency and parallelism differ?",
+    "shortAnswer": "Concurrency is coordinating multiple tasks whose execution overlaps in time; parallelism means tasks execute at the same time on different processing resources.",
+    "longAnswer": "Concurrency is coordinating multiple tasks whose execution overlaps in time; parallelism means tasks execute at the same time on different processing resources. A system can be concurrent without running JavaScript on multiple cores. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://pages.cs.wisc.edu/~remzi/OSTEP/"
+    ]
+  },
+  {
+    "question": "What is a race condition, and how do you prevent one?",
+    "shortAnswer": "A race condition occurs when correctness depends on the timing or interleaving of operations.",
+    "longAnswer": "A race condition occurs when correctness depends on the timing or interleaving of operations. Use clear ownership, synchronization or atomic operations, transactions, and idempotent processing as appropriate; test concurrent cases. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://pages.cs.wisc.edu/~remzi/OSTEP/"
+    ]
+  },
+  {
+    "question": "What do stack and heap mean in memory management?",
+    "shortAnswer": "The call stack tracks active function calls and local execution state; the heap stores dynamically allocated objects managed by the language runtime.",
+    "longAnswer": "The call stack tracks active function calls and local execution state; the heap stores dynamically allocated objects managed by the language runtime. Exact allocation and garbage-collection details depend on the language and runtime. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://pages.cs.wisc.edu/~remzi/OSTEP/"
+    ]
+  },
+  {
+    "question": "What is cache locality, and why do data layout and access patterns matter?",
+    "shortAnswer": "Programs often run faster when they reuse nearby data because CPUs move memory in cache lines.",
+    "longAnswer": "Programs often run faster when they reuse nearby data because CPUs move memory in cache lines. Sequential array access often has better locality than pointer-chasing through scattered nodes, even when asymptotic complexity is the same. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "How do TCP and UDP differ?",
+    "shortAnswer": "TCP provides a reliable, ordered byte stream with connection management; UDP sends datagrams without guaranteeing delivery or order.",
+    "longAnswer": "TCP provides a reliable, ordered byte stream with connection management; UDP sends datagrams without guaranteeing delivery or order. The choice depends on the application's tolerance for loss, latency, and recovery. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://www.rfc-editor.org/rfc/rfc9293.html",
+      "https://www.rfc-editor.org/rfc/rfc768.html"
+    ]
+  },
+  {
+    "question": "What does idempotency mean, and why does it matter for retries?",
+    "shortAnswer": "An operation is idempotent when repeating the same request has the same intended effect as performing it once.",
+    "longAnswer": "An operation is idempotent when repeating the same request has the same intended effect as performing it once. Idempotency keys or unique constraints can prevent duplicate side effects when clients, queues, or webhooks retry. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent"
+    ]
+  }
+]

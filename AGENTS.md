@@ -13,6 +13,11 @@ until no actionable findings remain. Keep read-only advice, planning-only, and r
 out of the implementation workflow. The code-review skill is also used when the user asks for a
 review.
 
+## Interview Question Dataset
+
+For any task that adds, edits, or removes question records in `src/data/db.json`, invoke
+`$db-question-author` before editing and follow its validation and duplicate-check workflow.
+
 ## Documentation
 
 For work that may be governed by project documentation, search from the project root first:
@@ -72,8 +77,9 @@ npx expo install --fix
 
 ## Building with EAS
 
-Use EAS to build, sign, and submit in the cloud (`npx eas-cli@latest build` and
-`npx eas-cli@latest submit`) and to publish over-the-air updates (`npx eas-cli@latest update`).
+Use EAS to build, sign, and submit in the cloud and to publish over-the-air updates. Use the
+version pinned in `eas.json` (`npx eas-cli@26.0.0` in the current setup) so local and release builds
+use the same CLI version.
 Reference: <https://docs.expo.dev/eas/index.md>
 
 ## Native Projects

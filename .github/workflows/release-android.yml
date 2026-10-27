@@ -1,0 +1,147 @@
+name: Android GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: android-release
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set app version from tag
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          node - "$version" <<'NODE'
+          const fs = require('node:fs');
+          const version = process.argv[2];
+          const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+          if (!semverPattern.test(version)) {
+            console.error('::error::Use a semantic version tag such as v1.2.3 or v1.2.3-beta.1.');
+            process.exit(1);
+          }
+          const appConfig = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+          appConfig.expo.version = version;
+          fs.writeFileSync('app.json', `${JSON.stringify(appConfig, null, 2)}\n`);
+          NODE
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate EAS project setup
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [[ -z "$EXPO_TOKEN" ]]; then
+            echo "::error::Add an Expo access token as the EXPO_TOKEN secret for the android-release environment."
+            exit 1
+          fi
+
+          node <<'NODE'
+          const appConfig = require('./app.json').expo;
+          if (!appConfig.extra?.eas?.projectId) {
+            console.error('::error::Link this app to EAS with `npx eas-cli@26.0.0 project:init`.');
+            process.exit(1);
+          }
+          NODE
+
+      - name: Build APK with EAS
+        id: eas-build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx eas-cli@26.0.0 build \
+            --platform android \
+            --profile github-release \
+            --message "GitHub release $GITHUB_REF_NAME" \
+            --non-interactive \
+            --wait \
+            --json > "$RUNNER_TEMP/eas-build.json"
+
+          build_id="$(node -e '
+            const fs = require("node:fs");
+            const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const build = Array.isArray(data) ? data[0] : data;
+            if (!build?.id || build.status !== "FINISHED") process.exit(1);
+            process.stdout.write(build.id);
+          ' "$RUNNER_TEMP/eas-build.json")"
+
+          echo "build_id=$build_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK
+        id: download
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx eas-cli@26.0.0 build:download \
+            --id "${{ steps.eas-build.outputs.build_id }}" \
+            --non-interactive \
+            --json > "$RUNNER_TEMP/eas-download.json"
+
+          artifact_path="$(node -e '
+            const fs = require("node:fs");
+            const result = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            if (!result.path) process.exit(1);
+            process.stdout.write(result.path);
+          ' "$RUNNER_TEMP/eas-download.json")"
+
+          mkdir -p release-assets
+          apk_path="release-assets/iwanttobereadyforinterview-${GITHUB_REF_NAME}.apk"
+          cp "$artifact_path" "$apk_path"
+          (
+            cd release-assets
+            sha256sum "$(basename "$apk_path")" > "$(basename "$apk_path").sha256"
+          )
+
+          echo "apk_path=$apk_path" >> "$GITHUB_OUTPUT"
+          echo "checksum_path=$apk_path.sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          APK_PATH: ${{ steps.download.outputs.apk_path }}
+          CHECKSUM_PATH: ${{ steps.download.outputs.checksum_path }}
+        shell: bash
+        run: |
+          release_flags=()
+          version_without_build_metadata="${VERSION%%+*}"
+          if [[ "$version_without_build_metadata" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+
+          gh release create "$GITHUB_REF_NAME" \
+            "$APK_PATH" \
+            "$CHECKSUM_PATH" \
+            --verify-tag \
+            --title "Android $GITHUB_REF_NAME" \
+            --generate-notes \
+            "${release_flags[@]}"
