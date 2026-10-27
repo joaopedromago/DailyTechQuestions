@@ -31,13 +31,17 @@ a documented rule.
 
 ### Systems
 
+- [Current Application](Systems/CurrentApp.md) — Existing Expo Router scaffold, UI ownership, and
+  question catalog shape.
 - [Documentation Search](Systems/DocumentationSearch.md) — Python-based retrieval over project
   documentation.
 
 ### Design
 
-No feature contracts have been documented yet. Add a Design document when a product or feature
-contract is available to document.
+- [Study Experience](Design/StudyExperience.md) — Planned home menu, quiz, question browsing, and
+  session-resume behavior.
+- [UI Architecture](Design/UIArchitecture.md) — Planned gluestack-ui component, folder, and state
+  conventions.
 
 ### Project records
 

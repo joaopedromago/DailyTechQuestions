@@ -2,6 +2,19 @@
 
 An Expo and React Native app built with TypeScript and Expo Router.
 
+## Purpose
+
+I Want To Be Ready For Interview is intended to be a local, self-guided study app for software
+engineering topics: Node, TypeScript, JavaScript, React, Computer Science, and AI Tools. It presents
+interview-style questions with quick and full answers for solo review or discussion with another
+person. It is for learning, not an exam: users do not submit answers, receive grades, or compete.
+
+The question catalog is maintained in [`src/data/db.json`](src/data/db.json). The planned app will
+let users start a random quiz, browse questions, and continue an unfinished quiz saved on their
+device. Those study flows are not implemented in the current Expo starter app; see the
+[study experience contract](Docs/Design/StudyExperience.md), [UI architecture contract](Docs/Design/UIArchitecture.md),
+and [implementation TODOs](Docs/TODOs.md).
+
 ## Requirements
 
 - Node.js 22, within the versions supported by `package.json`
