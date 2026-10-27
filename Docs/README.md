@@ -31,8 +31,8 @@ a documented rule.
 
 ### Systems
 
-- [Current Application](Systems/CurrentApp.md) — Existing Expo Router scaffold, UI ownership, and
-  question catalog shape.
+- [Current Application](Systems/CurrentApp.md) — Current app shell, UI ownership, and question
+  catalog shape.
 - [Documentation Search](Systems/DocumentationSearch.md) — Python-based retrieval over project
   documentation.
 
@@ -40,8 +40,8 @@ a documented rule.
 
 - [Study Experience](Design/StudyExperience.md) — Planned home menu, quiz, question browsing, and
   session-resume behavior.
-- [UI Architecture](Design/UIArchitecture.md) — Planned gluestack-ui component, folder, and state
-  conventions.
+- [UI Architecture](Design/UIArchitecture.md) — gluestack-ui, NativeWind `className`, shared
+  controls, icon, and state conventions.
 
 ### Project records
 

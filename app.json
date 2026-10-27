@@ -8,7 +8,8 @@
     "scheme": "iwanttobereadyforinterview",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.iwanttobereadyforinterview"
     },
     "android": {
       "package": "com.iwanttobereadyforinterview",
@@ -33,7 +34,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "@react-native-vector-icons/material-icons"
     ],
     "experiments": {
       "typedRoutes": true,

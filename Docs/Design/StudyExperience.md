@@ -1,9 +1,9 @@
 # Study Experience
 
-Status: Not implemented
+Status: Partially implemented
 
-This contract describes the intended local study experience. The current starter app and question
-catalog are summarized in [Current Application](../Systems/CurrentApp.md).
+This contract describes the intended local study experience. Current implementation status and
+question catalog ownership are summarized in [Current Application](../Systems/CurrentApp.md).
 
 ## Purpose and home menu
 
@@ -13,6 +13,10 @@ Questions can be reviewed alone or discussed with another person.
 
 The home menu presents three actions: **Start Random Quiz**, **View Questions**, and **Continue**.
 Continue is always visible but disabled when there is no unfinished quiz.
+
+The menu also offers a light/dark appearance toggle that switches to the other appearance. Use a
+Material Icon to identify the mode action and expose its target appearance in the accessible
+label.
 
 ## Random quiz
 

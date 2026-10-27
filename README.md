@@ -9,11 +9,10 @@ engineering topics: Node, TypeScript, JavaScript, React, Computer Science, and A
 interview-style questions with quick and full answers for solo review or discussion with another
 person. It is for learning, not an exam: users do not submit answers, receive grades, or compete.
 
-The question catalog is maintained in [`src/data/db.json`](src/data/db.json). The planned app will
-let users start a random quiz, browse questions, and continue an unfinished quiz saved on their
-device. Those study flows are not implemented in the current Expo starter app; see the
-[study experience contract](Docs/Design/StudyExperience.md), [UI architecture contract](Docs/Design/UIArchitecture.md),
-and [implementation TODOs](Docs/TODOs.md).
+The question catalog is maintained in [`src/data/db.json`](src/data/db.json). The current home menu
+links to temporary quiz setup and question browsing screens; the study flows and saved quiz sessions
+are still planned. See the [study experience contract](Docs/Design/StudyExperience.md),
+[UI architecture contract](Docs/Design/UIArchitecture.md), and [implementation TODOs](Docs/TODOs.md).
 
 ## Requirements
 
