@@ -54,14 +54,17 @@ EAS cloud builds require an Expo account and project association. See [Expo's An
 
 ## GitHub Android releases
 
-Pushing a semantic version tag such as `v1.2.3` starts the Android release workflow. The build waits for approval through the `android-release` GitHub Environment before any job steps run. After approval, it builds a signed APK with the `github-release` EAS profile, sets the app version from the tag, increments the remote Android version code, then creates a GitHub Release with the APK and its SHA-256 checksum. Prerelease tags such as `v1.2.3-beta.1` create prereleases. The EAS CLI version is pinned to `26.0.0` in `eas.json` and the release workflow.
+Pushing a semantic version tag such as `v1.2.3` starts the Android release workflow. If required reviewers are configured for the `android-release` GitHub Environment, the job waits for approval before running. It then builds a signed APK with the `github-release` EAS profile, sets the app version from the tag, increments the remote Android version code, and creates a GitHub Release with the APK and its SHA-256 checksum. Reviewer approval is optional; a solo maintainer can leave it unconfigured. Prerelease tags such as `v1.2.3-beta.1` create prereleases. The EAS CLI version is pinned to `26.0.0` in `eas.json` and the release workflow.
 
 Before the first tag:
 
 1. Sign in to Expo and run `npx eas-cli@26.0.0 project:init` to link this app to an EAS project, then commit the generated `extra.eas.projectId` in `app.json`.
-2. In the repository’s **Settings → Environments**, create an environment named `android-release`. Add required reviewer(s), enable prevention of self-review where available, and restrict deployments to version tags matching `v*`.
+2. In the repository’s **Settings → Environments**, create an environment named `android-release` and restrict deployments to version tags matching `v*`. Configure required reviewers only if an independent approval gate is desired; this is optional for a solo maintainer.
 3. Create an [Expo access token](https://docs.expo.dev/accounts/programmatic-access/) and add it as an [environment secret](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) named `EXPO_TOKEN` in `android-release`. Remove any repository-level `EXPO_TOKEN` secret so the token is available only through the protected environment.
 4. Add a GitHub tag ruleset targeting `v*` and restrict who can create, update, or delete those tags to release maintainers. This prevents an unreviewed tag push from selecting arbitrary source for a release.
 5. Check out the reviewed commit, then push its version tag, for example `git tag v1.0.0 && git push origin v1.0.0`.
 
 The release workflow only runs for version tags. Regular pushes and pull requests do not run project CI workflows.
+
+
+### This project was entirely made ai-assisted with OpenAI ChatGPT (pro plan) Luna XHigh
