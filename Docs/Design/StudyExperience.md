@@ -42,6 +42,10 @@ Previous and next controls and horizontal swipes also navigate while answers are
 system back moves to the previous quiz position, or returns to the menu from the first question.
 Returning to the menu keeps the unfinished snapshot.
 
+A copy icon beside the prompt copies the stored `question` value verbatim. For `JavascriptCode`, it
+copies the raw snippet; the action is available in both browse and quiz modes. The icon follows the
+selected theme and reports clipboard failures with an error icon.
+
 After the last question, show a completion state with a return-to-menu action and clear the
 unfinished quiz session.
 

@@ -10,6 +10,7 @@ import {
   type Question,
 } from '@/data/questions';
 
+import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
@@ -73,8 +74,17 @@ export function QuestionDetailView({
   const fullAnswerVisible = disclosureMatches && revealState.fullAnswerVisible;
   const colorScheme = useColorScheme();
   const disclosureIconColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
+  const webColorScheme =
+    Platform.OS === 'web' && typeof document !== 'undefined'
+      ? document.documentElement.dataset.theme
+      : undefined;
+  const effectiveColorScheme =
+    webColorScheme === 'light' || webColorScheme === 'dark' ? webColorScheme : colorScheme;
+  const questionActionIconColor = effectiveColorScheme === 'dark' ? '#ffffff' : '#000000';
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const isCodeQuestion = isJavascriptCodeQuestion(question);
+  const [copyFailure, setCopyFailure] = useState<{ disclosureKey: string | number } | null>(null);
+  const copyFailed = copyFailure !== null && Object.is(copyFailure.disclosureKey, disclosureKey);
 
   const toggleAnswer = () => {
     setRevealState(
@@ -82,6 +92,15 @@ export function QuestionDetailView({
         ? { disclosureKey, shortAnswerVisible: false, fullAnswerVisible: false }
         : { disclosureKey, shortAnswerVisible: true, fullAnswerVisible: false },
     );
+  };
+
+  const copyQuestion = async () => {
+    try {
+      const didCopy = await Clipboard.setStringAsync(question.question);
+      setCopyFailure(didCopy ? null : { disclosureKey });
+    } catch {
+      setCopyFailure({ disclosureKey });
+    }
   };
 
   const panResponder = useMemo(
@@ -139,9 +158,41 @@ export function QuestionDetailView({
             <Text className="text-sm font-medium text-muted-foreground">
               {getCategoryLabel(question.category)}
             </Text>
-            <Text role="heading" className="text-2xl font-bold leading-tight text-foreground">
-              {getQuestionPrompt(question)}
-            </Text>
+            <Box className="flex-row items-start gap-2">
+              <Text
+                role="heading"
+                className="flex-1 text-2xl font-bold leading-tight text-foreground"
+              >
+                {getQuestionPrompt(question)}
+              </Text>
+              <Button
+                accessibilityLabel={
+                  copyFailed
+                    ? isCodeQuestion
+                      ? 'Could not copy code'
+                      : 'Could not copy question'
+                    : isCodeQuestion
+                      ? 'Copy code'
+                      : 'Copy question'
+                }
+                accessibilityHint={
+                  copyFailed
+                    ? 'Clipboard access failed. Try selecting and copying the text manually.'
+                    : 'Copies this text to the clipboard.'
+                }
+                className="shrink-0"
+                size="icon"
+                variant="ghost"
+                onPress={copyQuestion}
+              >
+                <MaterialIcons
+                  accessible={false}
+                  color={questionActionIconColor}
+                  name={copyFailed ? 'error-outline' : 'content-copy'}
+                  size={18}
+                />
+              </Button>
+            </Box>
             {isCodeQuestion ? (
               <Box className="rounded-lg border border-border bg-card p-4">
                 <Text className="font-mono text-sm leading-5 text-foreground">

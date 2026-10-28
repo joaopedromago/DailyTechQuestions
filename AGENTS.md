@@ -39,6 +39,12 @@ per day, with a short heading for each entry. Rewrite feature documents to descr
 keep the history of changes in History. Add and index a Systems or Design document when a new system
 or feature contract needs a durable home. Do not invent app behavior while establishing AI tooling.
 
+## UI Verification
+
+Whenever an AI agent changes user-facing UI, invoke `$ui-visual-verification` and follow its
+instructions for localhost browser inspection and screenshot delivery. The skill requires phone-sized
+screenshots in both dark and light modes when the app supports them.
+
 ## Expo and React Native APIs
 
 Expo ships breaking changes each SDK release. Before writing code that touches Expo, EAS, or React

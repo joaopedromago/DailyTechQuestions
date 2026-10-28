@@ -4,6 +4,15 @@ Use this folder for concise, source-backed contracts about the application. Keep
 business behavior out of documentation until it has been established from the product requirements
 and implementation.
 
+## AI Agent UI Verification
+
+Whenever an AI agent changes user-facing UI, invoke the project-local `$ui-visual-verification`
+skill. It runs the app over HTTP on `localhost`, inspects the updated page, and requires screenshots
+at a phone-sized viewport in both dark and light mode when the app supports them. Include those
+screenshots in the handoff.
+This browser check supplements the required code checks; it does not replace native-platform
+validation when a change depends on native behavior.
+
 ## Documentation Types
 
 - **Systems** describes current runtime behavior, architecture, and code ownership. State what the
