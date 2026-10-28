@@ -13,7 +13,7 @@ Read the current `AGENTS.md`, `README.md`, `.github/workflows/release-android.ym
 
 Identify the latest published stable GitHub Release and its target tag, inspect all version tags and release workflow runs, and use that release as the comparison baseline. Read the `Docs/History/YYYY-MM-DD.md` entries from the baseline through the intended target commit. Use the history as primary evidence; inspect relevant current Design/System docs and commit changes when history is missing or unclear.
 
-Compare the baseline with the intended target, including only clearly in-scope working-tree changes. Ignore version-only edits in `app.json`, `package.json`, and `package-lock.json` when deciding whether unreleased content exists. If there are no other changes since the latest release, do not create a version-bump commit, push a commit, or create a tag; explain that there is nothing new to release.
+Compare the baseline with the intended target, including only clearly in-scope working-tree changes. Ignore version-only edits in `app.json`, `package.json`, and `package-lock.json`, and changes confined to `.agents/skills/`, `.github/workflows/`, or tests, when deciding whether unreleased app content exists. If there are no other changes since the latest release, do not create a version-bump commit, push a commit, or create a tag; explain that there is nothing new to release.
 
 If a higher stable tag has no published release, its workflow is still running, or tag/version state could skip or reuse a release, resolve that state before continuing. Never move or force-push an existing tag.
 
