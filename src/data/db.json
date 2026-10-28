@@ -446,7 +446,7 @@
     "question": "What should an API validate before applying a mutation?",
     "shortAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape.",
     "longAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat client-side validation or a TypeScript type as server-side validation.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
       "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
@@ -456,7 +456,7 @@
     "question": "How would you make a webhook receiver reliable?",
     "shortAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing.",
     "longAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not trust a parsed body before signature verification or assume providers deliver every event exactly once and in order.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.stripe.com/webhooks/signature",
       "https://docs.stripe.com/webhooks#event-delivery-behaviors"
@@ -466,7 +466,7 @@
     "question": "How do retries, idempotency, and an outbox fit together?",
     "shortAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously.",
     "longAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously. To make the answer complete, cover these points: Set a maximum attempt count or deadline, retry at one deliberate layer, treat repeated delivery as normal, and make the consumer idempotent. Common pitfall: Do not retry validation failures forever, reuse one key for different request intent, or assume a database commit and message publish are one atomic operation.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
       "https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_limit_retries.html",
@@ -477,7 +477,7 @@
     "question": "How do you isolate tenants in a multi-tenant service?",
     "shortAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes.",
     "longAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not accept an arbitrary tenant ID from the browser as proof of access or rely only on UI filtering.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
       "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
@@ -487,7 +487,7 @@
     "question": "What should you inspect when a PostgreSQL query is slow?",
     "shortAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use.",
     "longAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use. To make the answer complete, cover these points: Explain how an index should match measured filters, joins, ordering, and selectivity; check composite index order and the cost that indexes add to writes and storage. Common pitfall: Do not add indexes blindly or assume an index beats a sequential scan for a small table or a query that returns most rows.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/sql-explain.html",
       "https://www.postgresql.org/docs/current/indexes-types.html"
@@ -497,7 +497,7 @@
     "question": "How should a cache handle tenant-scoped data?",
     "shortAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes.",
     "longAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes. To make the answer complete, cover these points: Describe cache-aside, TTLs, cache stampedes, invalidation races, and how permission changes or revocation affect cached results. Common pitfall: Do not share a cache entry across tenants because a resource ID looks unique, or assume TTL gives immediate consistency.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
       "https://tanstack.com/query/latest/docs/framework/react/guides/query-keys"
@@ -507,7 +507,7 @@
     "question": "How would you design a background job for a patient nudge?",
     "shortAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending.",
     "longAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending. To make the answer complete, cover these points: Assume at-least-once delivery: make processing idempotent, persist the result before acknowledging, bound retries, and move poison messages to a dead-letter queue. Common pitfall: Do not let a duplicate or delayed job bypass clinician approval, opt-out state, or a later cancellation.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html",
@@ -518,7 +518,7 @@
     "question": "What makes logs and traces useful without leaking sensitive data?",
     "shortAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs.",
     "longAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not log full request bodies or tokens by default, especially for health data.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
       "https://opentelemetry.io/docs/languages/js/"
@@ -528,7 +528,7 @@
     "question": "How do you prevent one slow dependency from taking down the service?",
     "shortAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown.",
     "longAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown. To make the answer complete, cover these points: Explain closed/open/half-open states, safe degraded behavior, monitoring, and why retries need caps and jitter so they do not amplify an outage. Common pitfall: Do not retry every failure at several layers or treat the breaker as a replacement for timeouts and idempotency.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html",
       "https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html"
@@ -538,7 +538,7 @@
     "question": "What do transaction isolation levels protect, and when would you use a stronger level?",
     "shortAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried.",
     "longAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried. To make the answer complete, cover these points: Compare PostgreSQL Read Committed, Repeatable Read, and Serializable; mention constraints or row locks for specific invariants, short transaction scope, and retrying serialization failures. Common pitfall: Do not assume a transaction makes an external API call atomic with the database commit.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/transaction-iso.html",
       "https://www.postgresql.org/docs/current/explicit-locking.html"
@@ -548,7 +548,7 @@
     "question": "What does at-least-once delivery mean for a message consumer?",
     "shortAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order.",
     "longAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order. To make the answer complete, cover these points: Use a stable message ID or unique business key, make the side effect idempotent, persist success before acknowledging, and send repeatedly failing messages to a dead-letter queue. Common pitfall: Do not claim the queue guarantees exactly-once business effects just because it suppresses or deduplicates some messages.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html"
@@ -558,7 +558,7 @@
     "question": "How do read replicas affect read-after-write consistency?",
     "shortAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data.",
     "longAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data. To make the answer complete, cover these points: Route freshness-critical reads to the primary or use a database-specific mechanism to wait until a replica has applied the needed change; monitor lag and explain the scaling and availability trade-off. Common pitfall: Do not assume a successful primary commit is immediately visible on every replica.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html",
       "https://www.postgresql.org/docs/current/runtime-config-replication.html"
@@ -568,7 +568,7 @@
     "question": "What creates a hot partition, and how would you address it?",
     "shortAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused.",
     "longAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused. To make the answer complete, cover these points: Inspect hot keys and workload distribution, then redesign for higher-cardinality distribution; for a proven single-key hotspot, consider write sharding and the read fan-out it requires. Common pitfall: Do not add shards without accounting for query aggregation, cross-shard updates, and migration complexity.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-uniform-load.html",
       "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/throttling-key-range-limit-exceeded-mitigation.html"
@@ -578,7 +578,7 @@
     "question": "When would you use optimistic versus pessimistic concurrency control?",
     "shortAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized.",
     "longAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized. To make the answer complete, cover these points: Explain conditional updates or version columns versus row locks, how conflicts are returned or retried, and the blocking/deadlock costs of locks. Common pitfall: Do not silently overwrite a concurrent update or hold a row lock while waiting on a network call.",
-    "category": "Node",
+    "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/explicit-locking.html",
       "https://www.postgresql.org/docs/current/transaction-iso.html"
@@ -1092,5 +1092,154 @@
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent"
     ]
+  },
+  {
+    "question": "Design a URL shortener for a service with much more traffic for redirects than link creation.",
+    "shortAnswer": "Store each unique short code with its destination and cache frequently used mappings on the redirect path.",
+    "longAnswer": "Clarify custom aliases, expiration, traffic shape, and analytics needs. Generate collision-safe short codes and persist a unique code-to-destination mapping. Since redirects dominate writes, cache hot mappings while keeping durable storage as the source of truth. Keep analytics off the redirect critical path and discuss cache misses, abuse controls, and partitioning as traffic grows.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-modeling-nosql.html",
+      "https://aws.amazon.com/caching/best-practices/"
+    ]
+  },
+  {
+    "question": "Design a rate limiter for a public API used by many clients.",
+    "shortAnswer": "Set limits by client and route, then enforce them with a burst-aware policy at the edge or through shared state.",
+    "longAnswer": "First define the identity, quota window, burst allowance, and whether limits are approximate or strict. Choose a token bucket or another policy that fits those requirements and enforce it consistently across API instances. Return a clear throttling response such as HTTP 429, give clients retry guidance, and monitor both accepted and rejected traffic. Distributed counters need atomic updates or gateway-level enforcement.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-throttling.html"
+    ]
+  },
+  {
+    "question": "Design a reliable notification service that sends email, text, and push messages.",
+    "shortAnswer": "Persist requests and deliver them asynchronously through channel-specific workers with retries, deduplication, and visible delivery status.",
+    "longAnswer": "Clarify delivery latency, ordering, user preferences, provider limits, and what counts as delivered. Persist accepted requests before acknowledging them, then route work through queues to channel-specific workers. Use bounded retries and backoff, make message handling idempotent because queues can redeliver, and isolate provider failures. Record delivery state and move persistent failures to a dead-letter path for review or replay.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html",
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html"
+    ]
+  },
+  {
+    "question": "Design a personalized news feed for users following many accounts.",
+    "shortAnswer": "Choose fan-out on write, fan-out on read, or a hybrid based on access patterns, and cache hot feed data.",
+    "longAnswer": "Clarify feed size, freshness, ranking, and read-to-write ratio. Fan-out on write makes reads fast but can make high-follower writes expensive; fan-out on read reduces write work but adds read-time aggregation. A hybrid can treat high-follower accounts differently. Store feed items for predictable pagination, cache popular results, and make ranking and freshness trade-offs explicit before choosing a datastore or partition strategy.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-modeling-nosql.html",
+      "https://aws.amazon.com/caching/best-practices/"
+    ]
+  },
+  {
+    "question": "Design a chat service that supports realtime and offline messaging.",
+    "shortAnswer": "Use persistent connections for realtime delivery, durable conversation history, and a queued path for offline recipients.",
+    "longAnswer": "Clarify group sizes, ordering, delivery acknowledgements, message history, and offline behavior. Maintain a connection route for online clients and persist each message before confirming acceptance. Deliver to online recipients over a bidirectional connection and queue or otherwise retain work for offline users. Define ordering within a conversation, make retries safe, and separate presence from durable message state.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-overview.html",
+      "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html"
+    ]
+  },
+  {
+    "question": "How would you paginate a large collection in a public API?",
+    "shortAnswer": "Return bounded pages with an opaque continuation token and a next-page token, and design pagination into the API from the start.",
+    "longAnswer": "Define a maximum page size and return a continuation token that identifies where to continue without exposing internal query state. Keep the other filters and sort parameters stable across pages, and signal the end by omitting the next-page token. Pagination limits response size and lookup work as collections grow; adding it later can change existing client behavior, so include it in the initial API contract.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://google.aip.dev/158"
+    ]
+  },
+  {
+    "question": "for(var i = 0; i <5; i++) {\n  setTimeout(() => console.log(\"hi \" + i), 1000)\n}",
+    "shortAnswer": "hi 5 is logged five times after about one second.",
+    "longAnswer": "The loop uses var, so all five callbacks close over the same function-scoped i binding. The loop finishes and increments i to 5 before the timers run, so each callback reads 5 and logs hi 5. Each timer is scheduled with a 1000 millisecond delay.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "for (let i = 0; i < 5; i++) {\n  setTimeout(() => console.log(\"hi \" + i), 1000);\n}",
+    "shortAnswer": "hi 0 through hi 4 are logged in order after the timers fire.",
+    "longAnswer": "The loop declares i with let, which creates a separate binding for each loop iteration. Each callback therefore remembers that iteration's value instead of sharing one variable that has advanced to 5. The timers use the same delay, so Node logs the values in scheduling order.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "function readScore() {\n  console.log(score);\n  var score = 90;\n  console.log(score);\n}\nreadScore();",
+    "shortAnswer": "It logs undefined and then 90.",
+    "longAnswer": "Inside the function, the var declaration is hoisted and initialized to undefined before the function body runs. The assignment to 90 stays at its original location, so the first log sees undefined and the second sees 90.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "try {\n  console.log(score);\n} catch (error) {\n  console.log(error.name);\n}\nlet score = 3;\nconsole.log(score);",
+    "shortAnswer": "It logs ReferenceError and then 3.",
+    "longAnswer": "The let binding exists from the start of its block but is uninitialized until its declaration executes. Reading score before that point throws a ReferenceError in the temporal dead zone, which the catch block logs. Execution then reaches the declaration and logs 3.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "console.log(\"start\");\nsetTimeout(() => console.log(\"timer\"), 0);\nPromise.resolve().then(() => console.log(\"promise\"));\nconsole.log(\"end\");",
+    "shortAnswer": "It logs start, end, promise, then timer.",
+    "longAnswer": "The first two logs run synchronously in source order. Promise callbacks run as microtasks after the current JavaScript task finishes, while setTimeout schedules a later timer task. Node therefore logs promise before timer even though the timer was registered first.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "async function run() {\n  console.log(\"A\");\n  await Promise.resolve();\n  console.log(\"B\");\n}\n\nconsole.log(\"C\");\nrun();\nconsole.log(\"D\");",
+    "shortAnswer": "It logs C, A, D, then B.",
+    "longAnswer": "The top-level log C runs first. Calling run logs A before it reaches await; awaiting an already resolved promise still suspends the async function and schedules its continuation. The caller continues and logs D, then the continuation resumes and logs B.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "Promise.resolve(2)\n  .then((value) => value * 3)\n  .then((value) => console.log(value));\nconsole.log(\"sync\");",
+    "shortAnswer": "It logs sync and then 6.",
+    "longAnswer": "Promise.resolve(2) creates a fulfilled promise, and the then callbacks are queued to run after the current synchronous JavaScript finishes. The first callback multiplies 2 by 3 and passes 6 to the next callback. The synchronous log therefore appears before 6.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "function createCounter() {\n  let count = 0;\n  return () => ++count;\n}\n\nconst counter = createCounter();\nconsole.log(counter());\nconsole.log(counter());",
+    "shortAnswer": "It logs 1 and then 2.",
+    "longAnswer": "createCounter creates a local count binding and returns a function that closes over it. The binding remains available after createCounter returns, and each call to counter increments the same value before returning it.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const original = { preferences: { theme: \"dark\" } };\nconst copy = { ...original };\ncopy.preferences.theme = \"light\";\nconsole.log(original.preferences.theme);\nconsole.log(copy === original);",
+    "shortAnswer": "It logs light and then false.",
+    "longAnswer": "Object spread makes a shallow copy: copy is a new outer object, but its nested preferences property still points to the same object as original.preferences. Changing the nested theme through copy is visible through original, while the two outer objects are not identical.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "console.log(\"5\" + 2);\nconsole.log(\"5\" - 2);",
+    "shortAnswer": "It logs 52 and then 3.",
+    "longAnswer": "When one operand of + is a string, JavaScript converts the other operand to a string and concatenates them, producing 52. The subtraction operator instead converts the string operand to a number, so 5 minus 2 produces 3.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const values = [1, 2, 3];\nconst result = values.map((value) => value * 2).filter((value) => value > 2);\nconsole.log(result);",
+    "shortAnswer": "It logs [4, 6].",
+    "longAnswer": "map calls its function for each element and creates a new array containing the doubled values 2, 4, and 6. filter then keeps only the values greater than 2, so the final array is [4, 6].",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const account = {\n  balance: 10,\n  readBalance() {\n    return this.balance;\n  },\n};\nconst otherAccount = { balance: 25 };\nconst read = account.readBalance;\nconsole.log(account.readBalance());\nconsole.log(read.call(otherAccount));",
+    "shortAnswer": "It logs 10 and then 25.",
+    "longAnswer": "Calling account.readBalance as a method makes account the value of this, so it returns 10. Extracting the function removes that receiver, but call explicitly supplies otherAccount as this, so the detached call returns 25.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const { limit = 10 } = { limit: undefined };\nconst { pageSize = 20 } = { pageSize: null };\nconsole.log(limit);\nconsole.log(pageSize);",
+    "shortAnswer": "It logs 10 and then null.",
+    "longAnswer": "A destructuring default is used when the property value is undefined or absent, so limit receives 10. The pageSize property is explicitly null, which does not trigger its default initializer, so the second log prints null.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
   }
 ]

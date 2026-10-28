@@ -23,6 +23,9 @@ CATEGORY_ORDER = (
     "Node",
     "AI",
     "ComputerScience",
+    "SystemDesign",
+    "Backend",
+    "JavascriptCode",
 )
 STOP_WORDS = {
     "a", "an", "and", "are", "as", "at", "be", "between", "can", "could", "does",
@@ -60,6 +63,9 @@ GENERIC_CONSTRUCTORS = {
     "WeakMap", "WeakSet",
 }
 GENERIC_PREFIX = re.compile(r"([A-Za-z_$][A-Za-z0-9_$]*)$")
+CODE_FENCE_LINE = re.compile(r"^\s*(\x60{3,}|~{3,})(.*)$")
+CODE_FENCE_CLOSE = re.compile(r"^\s*(\x60{3,}|~{3,})[ \t]*$")
+JAVASCRIPT_FENCE_INFO = re.compile(r"^(?:js|javascript|jsx|ts|typescript|tsx)(?:\b|[.{])", re.IGNORECASE)
 MARKDOWN = re.compile(
     r"`|~~|\*\*[^*\s](?:[^*]*[^*\s])?\*\*|"
     r"(?<!\w)__(?:[^_\s](?:[^_\n]*[^_\s])?)__(?!\w)|"
@@ -72,6 +78,39 @@ MARKDOWN = re.compile(
 
 def normalize_question(value: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", value.casefold()))
+
+
+def normalize_code(value: str) -> str:
+    return value.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+
+def question_identity(value: str, category: str) -> str:
+    if category == "JavascriptCode":
+        return f"{category}\0{normalize_code(value)}"
+    return normalize_question(value)
+
+
+def has_markdown_fences(value: str) -> bool:
+    lines = value.splitlines()
+    for opening_index, line in enumerate(lines):
+        opening = CODE_FENCE_LINE.fullmatch(line)
+        if opening is None:
+            continue
+        marker, info = opening.groups()
+        if marker[0] == "\x60":
+            return True
+        info = info.strip()
+        if not info or info.startswith("{") or JAVASCRIPT_FENCE_INFO.match(info):
+            return True
+        for closing_line in lines[opening_index + 1 :]:
+            closing = CODE_FENCE_CLOSE.fullmatch(closing_line)
+            if (
+                closing
+                and marker[0] == closing.group(1)[0]
+                and len(closing.group(1)) >= len(marker)
+            ):
+                return True
+    return False
 
 
 def mask_known_generic_types(value: str) -> str:
@@ -110,7 +149,7 @@ def contains_html(value: str) -> bool:
     return bool(HTML_TAG.search(mask_known_generic_types(value)))
 
 
-def validate(records: object) -> list[str]:
+def validate(records: object, *, require_all_categories: bool = True) -> list[str]:
     errors: list[str] = []
     if not isinstance(records, list) or not records:
         return ["The JSON root must be a non-empty array."]
@@ -125,26 +164,32 @@ def validate(records: object) -> list[str]:
         if tuple(record.keys()) != KEY_ORDER:
             errors.append(f"{label} keys must be exactly {', '.join(KEY_ORDER)} in that order.")
 
+        category = record.get("category")
         for key in KEY_ORDER[:3]:
             value = record.get(key)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"{label}.{key} must be a non-empty string.")
                 continue
-            if value != value.strip() or "\n" in value or "\r" in value:
-                errors.append(f"{label}.{key} must be trimmed and fit on one line.")
-            text_to_check = TECHNICAL_DUNDER.sub("TECHNICAL_IDENTIFIER", value)
-            if contains_html(text_to_check) or MARKDOWN.search(text_to_check):
-                errors.append(f"{label}.{key} must use plain text without HTML or Markdown formatting.")
+            is_code_question = category == "JavascriptCode" and key == "question"
+            if value != value.strip():
+                errors.append(f"{label}.{key} must be trimmed.")
+            elif not is_code_question and ("\n" in value or "\r" in value):
+                errors.append(f"{label}.{key} must fit on one line.")
+            if not is_code_question:
+                text_to_check = TECHNICAL_DUNDER.sub("TECHNICAL_IDENTIFIER", value)
+                if contains_html(text_to_check) or MARKDOWN.search(text_to_check):
+                    errors.append(f"{label}.{key} must use plain text without HTML or Markdown formatting.")
+            elif has_markdown_fences(value):
+                errors.append(f"{label}.question must be raw JavaScript without Markdown fences.")
         question = record.get("question")
         short_answer = record.get("shortAnswer")
         long_answer = record.get("longAnswer")
-        if isinstance(question, str) and question and question[-1] not in ".?!":
+        if category != "JavascriptCode" and isinstance(question, str) and question and question[-1] not in ".?!":
             errors.append(f"{label}.question must end with question or prompt punctuation.")
         if isinstance(short_answer, str) and isinstance(long_answer, str):
             if len(long_answer) <= len(short_answer):
                 errors.append(f"{label}.longAnswer must meaningfully extend shortAnswer.")
 
-        category = record.get("category")
         if category not in CATEGORY_ORDER:
             errors.append(f"{label}.category must be one of: {', '.join(CATEGORY_ORDER)}.")
         else:
@@ -154,6 +199,8 @@ def validate(records: object) -> list[str]:
         if not isinstance(references, list):
             errors.append(f"{label}.referenceUrls must be an array.")
         else:
+            if category == "JavascriptCode" and references:
+                errors.append(f"{label}.referenceUrls must be empty for JavascriptCode records.")
             seen_urls: set[str] = set()
             for url in references:
                 if not isinstance(url, str) or not url.strip():
@@ -167,15 +214,16 @@ def validate(records: object) -> list[str]:
                 seen_urls.add(url)
 
         if isinstance(question, str) and question.strip():
-            normalized = normalize_question(question)
+            normalized = question_identity(question, category)
             if normalized in seen:
-                errors.append(f"{label}.question duplicates record {seen[normalized]} after normalization: {question}")
+                errors.append(f"{label}.question duplicates record {seen[normalized]} after normalization.")
             else:
                 seen[normalized] = index + 1
 
-    missing = [category for category in CATEGORY_ORDER if category not in observed_categories]
-    if missing:
-        errors.append(f"Every subject must remain represented; missing categories: {', '.join(missing)}.")
+    if require_all_categories:
+        missing = [category for category in CATEGORY_ORDER if category not in observed_categories]
+        if missing:
+            errors.append(f"Every subject must remain represented; missing categories: {', '.join(missing)}.")
 
     return errors
 
@@ -197,7 +245,16 @@ def main() -> int:
         default=[],
         help="Question to compare with the existing dataset; may be supplied more than once.",
     )
+    parser.add_argument(
+        "--candidate-category",
+        action="append",
+        default=[],
+        help="Category for the corresponding candidate; repeat in the same order as --candidate.",
+    )
     args = parser.parse_args()
+    if args.candidate and not args.candidate_category:
+        print("ERROR: Supply --candidate-category for every --candidate.", file=sys.stderr)
+        return 1
 
     try:
         records = json.loads(DB_PATH.read_text(encoding="utf-8"))
@@ -205,7 +262,7 @@ def main() -> int:
         print(f"Could not read valid JSON from {DB_PATH}: {exc}", file=sys.stderr)
         return 1
 
-    errors = validate(records)
+    errors = validate(records, require_all_categories=not args.candidate)
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
@@ -215,14 +272,31 @@ def main() -> int:
     summary = ", ".join(f"{category} {counts[category]}" for category in CATEGORY_ORDER)
     print(f"Validation passed: {len(records)} records; {summary}.")
 
+    if args.candidate_category and len(args.candidate_category) != len(args.candidate):
+        print("ERROR: Supply one --candidate-category for each --candidate.", file=sys.stderr)
+        return 1
+    candidate_categories = args.candidate_category or [""] * len(args.candidate)
+
     if isinstance(records, list):
         for candidate_index, candidate in enumerate(args.candidate):
-            normalized = normalize_question(candidate)
+            category = candidate_categories[candidate_index]
+            if category not in CATEGORY_ORDER:
+                print(f"ERROR: Unknown or empty candidate category: {category!r}", file=sys.stderr)
+                errors.append(f"Unknown or empty candidate category: {category!r}")
+                continue
+            if category == "JavascriptCode" and has_markdown_fences(candidate):
+                print("ERROR: JavascriptCode candidates must be raw JavaScript without Markdown fences.", file=sys.stderr)
+                errors.append("JavascriptCode candidate uses Markdown fences.")
+                continue
+            normalized = question_identity(candidate, category)
             for previous_index, previous in enumerate(args.candidate[:candidate_index], start=1):
-                previous_normalized = normalize_question(previous)
+                previous_category = candidate_categories[previous_index - 1]
+                previous_normalized = question_identity(previous, previous_category)
                 if normalized == previous_normalized:
                     print(f"Exact normalized duplicate between proposed candidates {previous_index} and {candidate_index + 1}: {candidate}")
                     errors.append(f"Proposed candidates {previous_index} and {candidate_index + 1} duplicate each other.")
+                elif category == "JavascriptCode" or previous_category == "JavascriptCode":
+                    continue
                 else:
                     score = similarity(candidate, previous)
                     if score >= 0.35:
@@ -235,11 +309,14 @@ def main() -> int:
                 record
                 for record in records
                 if isinstance(record, dict)
-                and normalize_question(record.get("question", "")) == normalized
+                and question_identity(record.get("question", ""), record.get("category", "")) == normalized
             ]
             if exact:
                 print(f"Exact normalized duplicate: {exact[0].get('question', '')}")
                 errors.append(f"Candidate is already present: {candidate}")
+                continue
+            if category == "JavascriptCode":
+                print("No exact code duplicate found; source snippets are compared by exact content.")
                 continue
             matches = [
                 (similarity(candidate, record["question"]), record)

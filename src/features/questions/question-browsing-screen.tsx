@@ -8,7 +8,7 @@ import { Input } from '@/components/shared/input';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/shared/button';
 import { Text } from '@/components/ui/text';
-import { getCategoryLabel } from '@/data/questions';
+import { getCategoryLabel, getQuestionPrompt, isJavascriptCodeQuestion } from '@/data/questions';
 
 import { filterQuestions, getQuestionCategories } from './question-utils';
 
@@ -88,25 +88,46 @@ export default function QuestionBrowsingScreen() {
             </Box>
           }
           ListHeaderComponent={listHeader}
-          renderItem={({ item }) => (
-            <Box className="px-5">
-              <Button
-                accessibilityLabel={`${getCategoryLabel(item.question.category)}: ${item.question.question}`}
-                className="w-full items-start justify-start"
-                variant="outline"
-                onPress={() => router.push(`/questions/${item.index}` as Href)}
-              >
-                <Box className="gap-1">
-                  <Text className="text-xs font-medium text-muted-foreground">
-                    {getCategoryLabel(item.question.category)}
-                  </Text>
-                  <ButtonText className="text-left text-base font-medium">
-                    {item.question.question}
-                  </ButtonText>
-                </Box>
-              </Button>
-            </Box>
-          )}
+          renderItem={({ item }) => {
+            const isCodeQuestion = isJavascriptCodeQuestion(item.question);
+            const questionPrompt = getQuestionPrompt(item.question);
+            const codePreview = isCodeQuestion
+              ? (item.question.question.split(/\r?\n/, 1)[0] ?? '')
+              : '';
+
+            return (
+              <Box className="px-5">
+                <Button
+                  accessibilityLabel={
+                    getCategoryLabel(item.question.category) +
+                    ': ' +
+                    questionPrompt +
+                    (isCodeQuestion ? '. Code: ' + codePreview : '')
+                  }
+                  className="w-full items-start justify-start"
+                  variant="outline"
+                  onPress={() => router.push(`/questions/${item.index}` as Href)}
+                >
+                  <Box className="gap-1">
+                    <Text className="text-xs font-medium text-muted-foreground">
+                      {getCategoryLabel(item.question.category)}
+                    </Text>
+                    <ButtonText className="text-left text-base font-medium">
+                      {questionPrompt}
+                    </ButtonText>
+                    {isCodeQuestion ? (
+                      <Text
+                        className="rounded-md bg-card px-2 py-1 font-mono text-sm text-foreground"
+                        numberOfLines={1}
+                      >
+                        {codePreview}
+                      </Text>
+                    ) : null}
+                  </Box>
+                </Button>
+              </Box>
+            );
+          }}
         />
       </Box>
     </SafeAreaView>

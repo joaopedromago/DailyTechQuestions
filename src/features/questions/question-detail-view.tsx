@@ -3,7 +3,12 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/shared/button';
 import { Text } from '@/components/ui/text';
-import { getCategoryLabel, type Question } from '@/data/questions';
+import {
+  getCategoryLabel,
+  getQuestionPrompt,
+  isJavascriptCodeQuestion,
+  type Question,
+} from '@/data/questions';
 
 import { useMemo, useRef, useState } from 'react';
 import {
@@ -69,6 +74,7 @@ export function QuestionDetailView({
   const colorScheme = useColorScheme();
   const disclosureIconColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const isCodeQuestion = isJavascriptCodeQuestion(question);
 
   const toggleAnswer = () => {
     setRevealState(
@@ -134,8 +140,15 @@ export function QuestionDetailView({
               {getCategoryLabel(question.category)}
             </Text>
             <Text role="heading" className="text-2xl font-bold leading-tight text-foreground">
-              {question.question}
+              {getQuestionPrompt(question)}
             </Text>
+            {isCodeQuestion ? (
+              <Box className="rounded-lg border border-border bg-card p-4">
+                <Text className="font-mono text-sm leading-5 text-foreground">
+                  {question.question}
+                </Text>
+              </Box>
+            ) : null}
           </Box>
 
           <Button
@@ -167,7 +180,11 @@ export function QuestionDetailView({
                   className="self-start"
                   variant="outline"
                   onPress={() =>
-                    setRevealState({ disclosureKey, shortAnswerVisible: true, fullAnswerVisible: true })
+                    setRevealState({
+                      disclosureKey,
+                      shortAnswerVisible: true,
+                      fullAnswerVisible: true,
+                    })
                   }
                 >
                   <ButtonText>See full answer</ButtonText>
