@@ -1241,5 +1241,110 @@
     "longAnswer": "A destructuring default is used when the property value is undefined or absent, so limit receives 10. The pageSize property is explicitly null, which does not trigger its default initializer, so the second log prints null.",
     "category": "JavascriptCode",
     "referenceUrls": []
+  },
+  {
+    "question": "const slow = new Promise((resolve) => setTimeout(() => resolve(\"first\"), 20));\nconst fast = new Promise((resolve) => setTimeout(() => resolve(\"second\"), 0));\n\nPromise.all([slow, fast]).then((values) => console.log(values));",
+    "shortAnswer": "It logs [ 'first', 'second' ].",
+    "longAnswer": "The second promise settles first, but Promise.all returns fulfillment values in input order and fulfills after both promises complete.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "Promise.any([\n  Promise.reject(\"offline\"),\n  Promise.resolve(\"ready\"),\n]).then((value) => console.log(value));",
+    "shortAnswer": "It logs ready.",
+    "longAnswer": "Promise.any fulfills with the first input promise that fulfills, so the earlier rejection does not prevent the fulfilled promise from supplying the result.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "Promise.resolve(4)\n  .then(() => {\n    throw new Error(\"bad\");\n  })\n  .catch((error) => error.message.toUpperCase())\n  .then((value) => console.log(value));",
+    "shortAnswer": "It logs BAD.",
+    "longAnswer": "Throwing in the first then rejects the chain. The catch handler converts the error into the fulfilled value BAD, which the next then logs.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "Promise.resolve(\"saved\")\n  .finally(() => \"ignored\")\n  .then((value) => console.log(value));",
+    "shortAnswer": "It logs saved.",
+    "longAnswer": "The callback passed to finally runs during settlement, but its ordinary return value does not replace the original fulfillment value.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "async function run() {\n  const result = await [1, 2].forEach(async (value) => value * 2);\n  console.log(result);\n}\nrun();",
+    "shortAnswer": "It logs undefined.",
+    "longAnswer": "forEach returns undefined and does not collect or await the promises returned by its callbacks, so awaiting its result still produces undefined.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "let total = 0;\nfor (let n = 1; n <= 6; n++) {\n  if (n % 2 === 0) continue;\n  total += n;\n}\nconsole.log(total);",
+    "shortAnswer": "It logs 9.",
+    "longAnswer": "continue skips the rest of the current iteration and proceeds to the loop update, so only 1, 3, and 5 are added to total.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "let count = 0;\nouter: for (let row = 1; row <= 3; row++) {\n  for (let col = 1; col <= 3; col++) {\n    count++;\n    if (row === 2 && col === 2) break outer;\n  }\n}\nconsole.log(count);",
+    "shortAnswer": "It logs 5.",
+    "longAnswer": "The label makes break exit both loops when row and col are both 2. The count reaches five before control moves past the labeled loop.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const values = [2, 4, 6, 7];\nfor (let i = 0; i < values.length; i++) {\n  if (values[i] % 2 === 0) values.splice(i, 1);\n}\nconsole.log(values);",
+    "shortAnswer": "It logs [ 4, 7 ].",
+    "longAnswer": "After splice removes the value at the current index, the next value shifts into that index. The loop then increments i and skips the shifted value.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const values = [10, , 30];\nconst fromLoop = [];\nfor (const value of values) fromLoop.push(value);\nconst fromForEach = [];\nvalues.forEach((value) => fromForEach.push(value));\nconsole.log(fromLoop);\nconsole.log(fromForEach);",
+    "shortAnswer": "It logs [ 10, undefined, 30 ], then [ 10, 30 ].",
+    "longAnswer": "The array hole is read as undefined by for...of, while forEach skips the missing index and invokes its callback only for assigned elements.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "function* steps() {\n  yield \"start\";\n  return \"done\";\n}\nconsole.log([...steps()]);",
+    "shortAnswer": "It logs [ 'start' ].",
+    "longAnswer": "The spread operator collects values yielded by the generator. Its final return value marks completion and is not included among the iterated values.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const values = [\"b\", \"a\", \"b\", \"c\", \"a\"];\nconsole.log([...new Set(values)]);",
+    "shortAnswer": "It logs [ 'b', 'a', 'c' ].",
+    "longAnswer": "A Set keeps one copy of each value and iterates in insertion order, so the first occurrence of each string determines its position.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const numbers = [3, 12, 4];\nconsole.log(numbers.sort());\nconsole.log(numbers.sort((a, b) => a - b));",
+    "shortAnswer": "It logs [ 12, 3, 4 ], then [ 3, 4, 12 ].",
+    "longAnswer": "Without a comparator, sort compares string representations. sort mutates the array, and the numeric comparator orders its values by subtraction.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "const votes = [\"yes\", \"no\", \"yes\", \"yes\"];\nconst counts = new Map();\nfor (const vote of votes) {\n  counts.set(vote, (counts.get(vote) ?? 0) + 1);\n}\nconsole.log([...counts]);",
+    "shortAnswer": "It logs [ [ 'yes', 3 ], [ 'no', 1 ] ].",
+    "longAnswer": "Each loop iteration increments the count for that vote. Spreading the Map produces its entries in the order each key was first inserted.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "function findPair(numbers, target) {\n  const seen = new Map();\n  for (let index = 0; index < numbers.length; index++) {\n    const value = numbers[index];\n    const needed = target - value;\n    if (seen.has(needed)) return [seen.get(needed), index];\n    seen.set(value, index);\n  }\n  return [];\n}\nconsole.log(findPair([4, 7, 1, 9], 10));",
+    "shortAnswer": "It logs [ 2, 3 ].",
+    "longAnswer": "The Map stores values already visited and their indices. For each number, the function checks whether its complement was seen, finding 1 and 9 at indices 2 and 3.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
+  },
+  {
+    "question": "function flatten(items) {\n  return items.reduce(\n    (result, item) => result.concat(Array.isArray(item) ? flatten(item) : item),\n    [],\n  );\n}\nconsole.log(flatten([1, [2, [3]], 4]));",
+    "shortAnswer": "It logs [ 1, 2, 3, 4 ].",
+    "longAnswer": "The reducer appends scalar items directly and recursively flattens nested arrays before appending them, producing one flat result array.",
+    "category": "JavascriptCode",
+    "referenceUrls": []
   }
 ]
