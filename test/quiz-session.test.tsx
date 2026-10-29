@@ -18,35 +18,29 @@ const HISTORY_KEY = 'study-experience.quiz-history';
 const LEGACY_SESSION_KEY = 'study-experience.quiz-session';
 
 function SessionControls() {
-  const {
-    isHydrated,
-    history,
-    session,
-    startSession,
-    setPosition,
-    completeSession,
-  } = useQuizSession();
+  const { isHydrated, history, session, startSession, setPosition, completeSession } =
+    useQuizSession();
 
   return (
     <View>
-      <Text testID='hydrated'>{String(isHydrated)}</Text>
-      <Text testID='history-state'>{JSON.stringify(history)}</Text>
-      <Text testID='latest-session'>{session ? JSON.stringify(session) : 'empty'}</Text>
+      <Text testID="hydrated">{String(isHydrated)}</Text>
+      <Text testID="history-state">{JSON.stringify(history)}</Text>
+      <Text testID="latest-session">{session ? JSON.stringify(session) : 'empty'}</Text>
       <Pressable
-        accessibilityRole='button'
-        accessibilityLabel='Start another quiz'
+        accessibilityRole="button"
+        accessibilityLabel="Start another quiz"
         onPress={() => startSession(['AI'], [questions[1], questions[2]])}
       />
       <Pressable
-        accessibilityRole='button'
-        accessibilityLabel='Advance'
+        accessibilityRole="button"
+        accessibilityLabel="Advance"
         onPress={() => {
           if (session) setPosition(session.id, 1);
         }}
       />
       <Pressable
-        accessibilityRole='button'
-        accessibilityLabel='Complete latest'
+        accessibilityRole="button"
+        accessibilityLabel="Complete latest"
         onPress={() => {
           if (session) completeSession(session.id);
         }}

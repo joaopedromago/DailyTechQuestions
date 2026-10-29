@@ -92,7 +92,7 @@ export default function HomeScreen() {
               className="w-full"
               size="lg"
               variant="secondary"
-              onPress={() => router.push("/quiz/history" as Href)}
+              onPress={() => router.push('/quiz/history' as Href)}
             >
               <ButtonText>History</ButtonText>
             </Button>

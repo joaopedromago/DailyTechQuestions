@@ -24,30 +24,33 @@ function HistoryCard({ entry }: { entry: QuizHistoryEntry }) {
       : undefined;
   const isDark = explicitWebTheme ? explicitWebTheme === 'dark' : colorScheme === 'dark';
   const createdAt = formatCreatedAt(entry.createdAt);
-  const questionProgress = 'Questions ' + (entry.currentPosition + 1) + '/' + entry.questions.length;
+  const questionProgress =
+    'Questions ' + (entry.currentPosition + 1) + '/' + entry.questions.length;
 
   return (
-    <Box className='rounded-xl border border-border bg-background p-3'>
-      <Box className='h-16 flex-row items-center gap-2'>
+    <Box className="rounded-xl border border-border bg-background p-3">
+      <Box className="h-16 flex-row items-center gap-2">
         <Button
           accessibilityLabel={'Open quiz created ' + createdAt + ', ' + questionProgress}
-          className='h-full min-w-0 flex-1 justify-center'
-          variant='ghost'
+          className="h-full min-w-0 flex-1 justify-center"
+          variant="ghost"
           onPress={() => router.push(('/quiz/play?quizId=' + encodeURIComponent(entry.id)) as Href)}
         >
-          <Box className='w-full gap-1'>
-            <Text numberOfLines={1} className='text-sm text-muted-foreground'>
+          <Box className="w-full gap-1">
+            <Text numberOfLines={1} className="text-sm text-muted-foreground">
               Created {createdAt}
             </Text>
-            <Text className='font-semibold text-foreground'>{questionProgress}</Text>
+            <Text className="font-semibold text-foreground">{questionProgress}</Text>
           </Box>
         </Button>
         <Button
-          accessibilityLabel={(isExpanded ? 'Hide' : 'Show') + ' categories for quiz created ' + createdAt}
+          accessibilityLabel={
+            (isExpanded ? 'Hide' : 'Show') + ' categories for quiz created ' + createdAt
+          }
           accessibilityState={{ expanded: isExpanded }}
-          className='min-h-11 min-w-11'
-          size='icon'
-          variant='outline'
+          className="min-h-11 min-w-11"
+          size="icon"
+          variant="outline"
           onPress={() => setIsExpanded((expanded) => !expanded)}
         >
           <MaterialIcons
@@ -58,10 +61,10 @@ function HistoryCard({ entry }: { entry: QuizHistoryEntry }) {
         </Button>
       </Box>
       {isExpanded ? (
-        <Box className='mt-3 flex-row flex-wrap gap-2'>
+        <Box className="mt-3 flex-row flex-wrap gap-2">
           {entry.selectedCategories.map((category) => (
-            <Box key={category} className='rounded-full bg-secondary px-3 py-1'>
-              <Text className='text-xs font-medium text-secondary-foreground'>
+            <Box key={category} className="rounded-full bg-secondary px-3 py-1">
+              <Text className="text-xs font-medium text-secondary-foreground">
                 {getCategoryLabel(category)}
               </Text>
             </Box>
@@ -88,37 +91,39 @@ export default function QuizHistoryScreen() {
   );
 
   return (
-    <SafeAreaView className='flex-1' style={{ flex: 1 }}>
-      <Box className='flex-1 bg-background'>
-        <ScrollView contentContainerClassName='gap-5 px-5 py-6'>
-          <Box className='mx-auto w-full max-w-xl gap-5'>
-            <Box className='gap-3'>
+    <SafeAreaView className="flex-1" style={{ flex: 1 }}>
+      <Box className="flex-1 bg-background">
+        <ScrollView contentContainerClassName="gap-5 px-5 py-6">
+          <Box className="mx-auto w-full max-w-xl gap-5">
+            <Box className="gap-3">
               <Button
-                accessibilityLabel='Back to menu'
-                className='self-start'
-                size='sm'
-                variant='ghost'
+                accessibilityLabel="Back to menu"
+                className="self-start"
+                size="sm"
+                variant="ghost"
                 onPress={() => router.replace('/')}
               >
                 <ButtonText>Back to menu</ButtonText>
               </Button>
-              <Text role='heading' className='text-2xl font-bold text-foreground'>
+              <Text role="heading" className="text-2xl font-bold text-foreground">
                 Quiz History
               </Text>
             </Box>
 
             {persistenceError ? (
-              <Text accessibilityRole='alert' className='text-sm text-destructive'>
+              <Text accessibilityRole="alert" className="text-sm text-destructive">
                 Quiz history could not be read or saved.
               </Text>
             ) : null}
 
             {!isHydrated ? (
-              <Text className='text-base text-muted-foreground'>Loading quiz history…</Text>
+              <Text className="text-base text-muted-foreground">Loading quiz history…</Text>
             ) : orderedHistory.length === 0 ? (
-              <Text className='text-base text-muted-foreground'>Your quizzes will appear here.</Text>
+              <Text className="text-base text-muted-foreground">
+                Your quizzes will appear here.
+              </Text>
             ) : (
-              <Box className='gap-3'>
+              <Box className="gap-3">
                 {orderedHistory.map((entry) => (
                   <HistoryCard key={entry.id} entry={entry} />
                 ))}

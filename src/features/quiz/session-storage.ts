@@ -19,7 +19,9 @@ function isQuestion(value: unknown): boolean {
   );
 }
 
-function isQuizSession(value: unknown): value is Omit<QuizHistoryEntry, 'id' | 'createdAt' | 'completedAt'> {
+function isQuizSession(
+  value: unknown,
+): value is Omit<QuizHistoryEntry, 'id' | 'createdAt' | 'completedAt'> {
   if (!value || typeof value !== 'object') return false;
   const session = value as Record<string, unknown>;
 
@@ -66,7 +68,7 @@ export async function loadQuizHistory(): Promise<QuizHistoryEntry[]> {
         (stored as Record<string, unknown>).version === 1 &&
         Array.isArray((stored as Record<string, unknown>).history)
       ) {
-        history = ((stored as { history: unknown[] }).history).filter(isHistoryEntry);
+        history = (stored as { history: unknown[] }).history.filter(isHistoryEntry);
       } else {
         await AsyncStorage.removeItem(QUIZ_HISTORY_KEY);
       }

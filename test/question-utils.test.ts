@@ -16,12 +16,12 @@ describe('question catalog helpers', () => {
 
   it('matches question and quick-answer text while applying categories', () => {
     const question = questions[0];
-    expect(filterQuestions(question.question, [question.category]).map(({ question: item }) => item)).toContainEqual(
-      question,
-    );
-    expect(filterQuestions(question.shortAnswer, [question.category]).map(({ question: item }) => item)).toContainEqual(
-      question,
-    );
+    expect(
+      filterQuestions(question.question, [question.category]).map(({ question: item }) => item),
+    ).toContainEqual(question);
+    expect(
+      filterQuestions(question.shortAnswer, [question.category]).map(({ question: item }) => item),
+    ).toContainEqual(question);
     expect(filterQuestions(question.question, ['missing-category'])).toEqual([]);
     expect(filterQuestions('', [])).toEqual([]);
   });

@@ -16,13 +16,13 @@ function SessionStatus() {
 
   return (
     <>
-      <Text testID='hydrated'>{String(isHydrated)}</Text>
-      <Text testID='persistence-error'>{String(persistenceError)}</Text>
-      <Text testID='history'>{JSON.stringify(history)}</Text>
-      <Text testID='latest-session'>{session ? 'available' : 'empty'}</Text>
+      <Text testID="hydrated">{String(isHydrated)}</Text>
+      <Text testID="persistence-error">{String(persistenceError)}</Text>
+      <Text testID="history">{JSON.stringify(history)}</Text>
+      <Text testID="latest-session">{session ? 'available' : 'empty'}</Text>
       <Pressable
-        accessibilityRole='button'
-        accessibilityLabel='Start after read failure'
+        accessibilityRole="button"
+        accessibilityLabel="Start after read failure"
         onPress={() => startSession(['AI'], [questions[0]])}
       />
     </>
@@ -50,7 +50,9 @@ describe('quiz history provider storage failures', () => {
     expect(loadQuizHistory).toHaveBeenCalled();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Start after read failure' }));
-    await waitFor(() => expect(screen.getByTestId('latest-session').props.children).toBe('available'));
+    await waitFor(() =>
+      expect(screen.getByTestId('latest-session').props.children).toBe('available'),
+    );
     expect(saveQuizHistory).not.toHaveBeenCalled();
   });
 });

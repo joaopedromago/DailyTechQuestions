@@ -9,7 +9,9 @@ describe('quiz question selection', () => {
 
     expect(selectedQuestions).toHaveLength(5);
     expect(new Set(selectedQuestions.map(({ question }) => question)).size).toBe(5);
-    expect(selectedQuestions.every(({ category }) => selectedCategories.includes(category))).toBe(true);
+    expect(selectedQuestions.every(({ category }) => selectedCategories.includes(category))).toBe(
+      true,
+    );
     expect(selectedPool.length).toBeGreaterThanOrEqual(5);
   });
 

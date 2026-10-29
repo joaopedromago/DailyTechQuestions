@@ -107,34 +107,34 @@ export default function QuizSetupScreen() {
   };
 
   return (
-    <SafeAreaView className='flex-1' style={{ flex: 1 }}>
-      <Box className='flex-1 bg-background'>
-        <ScrollView contentContainerClassName='gap-5 px-5 py-6'>
-          <Box className='gap-3'>
+    <SafeAreaView className="flex-1" style={{ flex: 1 }}>
+      <Box className="flex-1 bg-background">
+        <ScrollView contentContainerClassName="gap-5 px-5 py-6">
+          <Box className="gap-3">
             <Button
-              accessibilityLabel='Back to menu'
-              className='self-start'
-              size='sm'
-              variant='ghost'
+              accessibilityLabel="Back to menu"
+              className="self-start"
+              size="sm"
+              variant="ghost"
               onPress={() => router.back()}
             >
               <ButtonText>Back to menu</ButtonText>
             </Button>
-            <Text role='heading' className='text-2xl font-bold text-foreground'>
+            <Text role="heading" className="text-2xl font-bold text-foreground">
               Start Random Quiz
             </Text>
-            <Text className='text-base text-muted-foreground'>
+            <Text className="text-base text-muted-foreground">
               Choose one or more categories and set the maximum number of questions for this quiz.
             </Text>
           </Box>
 
-          <Box className='gap-2'>
-            <Box className='flex-row items-center justify-between gap-3'>
-              <Text className='font-semibold text-foreground'>Categories</Text>
+          <Box className="gap-2">
+            <Box className="flex-row items-center justify-between gap-3">
+              <Text className="font-semibold text-foreground">Categories</Text>
               <Button
                 accessibilityLabel={bulkSelectionLabel}
-                size='sm'
-                variant='outline'
+                size="sm"
+                variant="outline"
                 onPress={toggleBulkSelection}
               >
                 <ButtonText>{bulkSelectionLabel}</ButtonText>
@@ -144,21 +144,21 @@ export default function QuizSetupScreen() {
               <Checkbox
                 key={category}
                 checked={selectedCategories.includes(category)}
-                className='w-full justify-start'
+                className="w-full justify-start"
                 label={getCategoryLabel(category)}
                 onChange={() => toggleCategory(category)}
               />
             ))}
           </Box>
 
-          <Box className='gap-2'>
-            <Text className='font-semibold text-foreground'>Max questions</Text>
+          <Box className="gap-2">
+            <Text className="font-semibold text-foreground">Max questions</Text>
             <Input
-              accessibilityLabel='Max questions'
+              accessibilityLabel="Max questions"
               accessibilityState={{ disabled: maximumQuestions === 0 }}
               className={maximumQuestions === 0 ? 'opacity-50' : undefined}
               editable={maximumQuestions > 0}
-              keyboardType='number-pad'
+              keyboardType="number-pad"
               value={questionCountText}
               onBlur={() => {
                 if (maximumQuestions > 0 && questionCountText.length === 0) {
@@ -171,27 +171,23 @@ export default function QuizSetupScreen() {
               }}
               onChangeText={handleQuestionCountChange}
             />
-            <Text className='text-sm text-muted-foreground'>
+            <Text className="text-sm text-muted-foreground">
               Maximum: {maximumQuestions} questions across selected categories.
             </Text>
           </Box>
 
           {selectedCategories.length === 0 ? (
-            <Text className='text-sm text-destructive'>Select at least one category to start.</Text>
+            <Text className="text-sm text-destructive">Select at least one category to start.</Text>
           ) : null}
           {persistenceError ? (
-            <Text accessibilityRole='alert' className='text-sm text-destructive'>
+            <Text accessibilityRole="alert" className="text-sm text-destructive">
               Quiz history could not be saved.
             </Text>
           ) : null}
 
           <Button
-            accessibilityLabel='Start quiz'
-            isDisabled={
-              !isHydrated ||
-              selectedCategories.length === 0 ||
-              !hasValidQuestionCount
-            }
+            accessibilityLabel="Start quiz"
+            isDisabled={!isHydrated || selectedCategories.length === 0 || !hasValidQuestionCount}
             onPress={startQuiz}
           >
             <ButtonText>{isHydrated ? 'Start Quiz' : 'Loading…'}</ButtonText>

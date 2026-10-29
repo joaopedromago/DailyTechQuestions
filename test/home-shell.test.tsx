@@ -4,7 +4,12 @@ import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { Appearance, BackHandler, Platform } from 'react-native';
 
 import HomeScreen from '../src/app';
-import { getCategoryLabel, questions, questionCategories, type Question } from '../src/data/questions';
+import {
+  getCategoryLabel,
+  questions,
+  questionCategories,
+  type Question,
+} from '../src/data/questions';
 import QuestionBrowsingScreen from '../src/features/questions/question-browsing-screen';
 import {
   handleQuestionSwipe,
@@ -84,7 +89,8 @@ jest.mock('@/components/ui/button', () => {
         },
         children,
       ),
-    ButtonText: ({ children }: { children: React.ReactNode }) => React.createElement(Text, null, children),
+    ButtonText: ({ children }: { children: React.ReactNode }) =>
+      React.createElement(Text, null, children),
   };
 });
 
@@ -176,9 +182,11 @@ describe('study screens', () => {
     expect(screen.getByRole('button', { name: 'Start Random Quiz' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'View Questions' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Continue' }).props.accessibilityState).toMatchObject({
-      disabled: true,
-    });
+    expect(screen.getByRole('button', { name: 'Continue' }).props.accessibilityState).toMatchObject(
+      {
+        disabled: true,
+      },
+    );
     await emptySessionView.unmount();
 
     setMockHistory([makeHistoryEntry({ selectedCategories: ['Javascript'] })]);
@@ -253,9 +261,11 @@ describe('study screens', () => {
     await fireEvent.changeText(countInput, '999');
     expect(countInput.props.value).toBe(String(questions.length));
 
-    await fireEvent.press(screen.getByRole('checkbox', {
-      name: getCategoryLabel(questionCategories[0]),
-    }));
+    await fireEvent.press(
+      screen.getByRole('checkbox', {
+        name: getCategoryLabel(questionCategories[0]),
+      }),
+    );
     expect(screen.getByRole('button', { name: 'Select remaining' })).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Select remaining' }));
     expect(screen.getByRole('button', { name: 'Unselect all' })).toBeTruthy();
@@ -263,12 +273,16 @@ describe('study screens', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Unselect all' }));
     expect(screen.getByRole('button', { name: 'Select all' })).toBeTruthy();
     expect(countInput.props.editable).toBe(false);
-    expect(screen.getByRole('button', { name: 'Start quiz' }).props.accessibilityState).toMatchObject({
+    expect(
+      screen.getByRole('button', { name: 'Start quiz' }).props.accessibilityState,
+    ).toMatchObject({
       disabled: true,
     });
 
     const selectedCategory = questionCategories[0];
-    await fireEvent.press(screen.getByRole('checkbox', { name: getCategoryLabel(selectedCategory) }));
+    await fireEvent.press(
+      screen.getByRole('checkbox', { name: getCategoryLabel(selectedCategory) }),
+    );
     const expectedMaximum = getQuestionsForCategories([selectedCategory]).length;
     expect(screen.getByRole('button', { name: 'Select remaining' })).toBeTruthy();
     await waitFor(() => expect(countInput.props.value).toBe(String(expectedMaximum)));
@@ -329,14 +343,18 @@ describe('study screens', () => {
 
     expect(view.queryByText('Quick response.')).toBeNull();
     expect(view.queryByRole('button', { name: 'Next Question' })).toBeNull();
-    expect(view.getByRole('button', { name: 'See answer' }).props.accessibilityState).toMatchObject({
-      expanded: false,
-    });
+    expect(view.getByRole('button', { name: 'See answer' }).props.accessibilityState).toMatchObject(
+      {
+        expanded: false,
+      },
+    );
     expect(view.getByTestId('answer-disclosure-icon').props.color).toBe('#ffffff');
     await fireEvent.press(view.getByRole('button', { name: 'See answer' }));
     expect(view.getByText('Quick response.')).toBeTruthy();
     expect(view.getByText('Category: AI Tools')).toBeTruthy();
-    expect(view.getByRole('button', { name: 'Hide answer' }).props.accessibilityState).toMatchObject({
+    expect(
+      view.getByRole('button', { name: 'Hide answer' }).props.accessibilityState,
+    ).toMatchObject({
       expanded: true,
     });
     await fireEvent.press(view.getByRole('button', { name: 'See full answer' }));
@@ -446,7 +464,8 @@ describe('study screens', () => {
         }),
       ]);
       const view = await render(<QuizPlayScreen />);
-      const [shouldPreventRemoval, onPreventedRemoval] = mockUsePreventRemove.mock.calls.at(-1) ?? [];
+      const [shouldPreventRemoval, onPreventedRemoval] =
+        mockUsePreventRemove.mock.calls.at(-1) ?? [];
 
       expect(shouldPreventRemoval).toBe(true);
       await act(async () => {

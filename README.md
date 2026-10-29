@@ -66,5 +66,4 @@ Before the first tag:
 
 The release workflow only runs for version tags. Regular pushes and pull requests do not run project CI workflows.
 
-
 ### This project was entirely made ai-assisted with OpenAI ChatGPT (pro plan) Luna XHigh

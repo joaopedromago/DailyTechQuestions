@@ -41,7 +41,11 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
       return { ...state, history: [...state.history, action.session], shouldPersist: true };
     case 'position': {
       const index = state.history.findIndex(({ id }) => id === action.sessionId);
-      if (index < 0 || action.position < 0 || action.position >= state.history[index].questions.length) {
+      if (
+        index < 0 ||
+        action.position < 0 ||
+        action.position >= state.history[index].questions.length
+      ) {
         return state;
       }
 
