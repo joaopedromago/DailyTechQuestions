@@ -11,21 +11,24 @@ stack with the Expo Router theme provider, gluestack provider, and safe-area pro
 configured animated splash overlay.
 
 [`src/app/index.tsx`](../../src/app/index.tsx) displays the study menu: Start Random Quiz, View
-Questions, and Continue. Continue becomes enabled after session hydration when an unfinished quiz
-exists. The menu also toggles between light and dark appearance and uses a Material Icon to identify
-the target mode. Native platforms use the React Native appearance setting; web records the current
-selection on the document root so it remains consistent when navigating between routes.
+Questions, Continue, and History. Continue becomes enabled after history hydration when a quiz
+record exists and opens the newest-created record. The menu also toggles between light and dark
+appearance and uses a Material Icon to identify the target mode. Native platforms use the React
+Native appearance setting; web records the current selection on the document root so it remains
+consistent when navigating between routes.
 
 `/questions` lists catalog questions with category filters and normalized search, owned by
 [`question-browsing-screen.tsx`](../../src/features/questions/question-browsing-screen.tsx) and
 [`question-utils.ts`](../../src/features/questions/question-utils.ts). Selecting a result pushes
 `/questions/[questionIndex]`, which uses
 [`question-detail-view.tsx`](../../src/features/questions/question-detail-view.tsx) and preserves
-list state underneath. `/quiz/setup` selects categories and creates a shuffled question snapshot;
-`/quiz/play` uses that snapshot for navigation, progressive answer disclosure, and completion.
-[`quiz-session.tsx`](../../src/features/quiz/quiz-session.tsx) owns app-wide state, while
-[`session-storage.ts`](../../src/features/quiz/session-storage.ts) persists the current snapshot in
-AsyncStorage. Returning to the menu preserves it, a new quiz replaces it, and completion clears it.
+list state underneath. `/quiz/setup` selects categories and a question count, then creates a shuffled
+sample. `/quiz/history` lists saved records and category badges. `/quiz/play` loads the newest-created
+record for Continue or a selected record by ID for History.
+[`quiz-session.tsx`](../../src/features/quiz/quiz-session.tsx) owns app-wide history state, while
+[`session-storage.ts`](../../src/features/quiz/session-storage.ts) persists all records in AsyncStorage.
+New quizzes append records, navigation updates each record's position, and completion marks rather
+than clears the record.
 
 Gluestack-generated components and provider configuration live in `src/components/ui/`. Shared
 application controls live in `src/components/shared/`; the button, input, and checkbox controls are
@@ -66,6 +69,7 @@ The icon follows the selected page theme and switches to an error icon if clipbo
 
 ## Current feature boundary
 
-The catalog is local and read-only. Browse filters and answer-disclosure state are screen-local;
-unfinished quiz state persists locally, with answer disclosure resetting on each question change or
-resume. A malformed saved snapshot is removed and Continue is unavailable.
+The catalog is local and read-only. Browse filters and answer-disclosure state are screen-local; quiz
+history persists locally, with answer disclosure resetting on each question change or resume. A
+valid legacy quiz snapshot migrates into history. Malformed stored records are discarded, and Continue
+is unavailable when history is empty.

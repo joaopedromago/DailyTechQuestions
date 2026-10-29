@@ -26,6 +26,7 @@ export default function TabLayout() {
               <Stack.Screen name="questions" />
               <Stack.Screen name="questions/[questionIndex]" />
               <Stack.Screen name="quiz/setup" />
+              <Stack.Screen name="quiz/history" />
               <Stack.Screen name="quiz/play" />
             </Stack>
           </QuizSessionProvider>

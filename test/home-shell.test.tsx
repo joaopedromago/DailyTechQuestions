@@ -1,10 +1,10 @@
 import React from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { router, usePreventRemove } from 'expo-router';
+import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { Appearance, BackHandler, Platform } from 'react-native';
 
 import HomeScreen from '../src/app';
-import { getCategoryLabel, questions, questionCategories } from '../src/data/questions';
+import { getCategoryLabel, questions, questionCategories, type Question } from '../src/data/questions';
 import QuestionBrowsingScreen from '../src/features/questions/question-browsing-screen';
 import {
   handleQuestionSwipe,
@@ -12,7 +12,9 @@ import {
 } from '../src/features/questions/question-detail-view';
 import QuizSetupScreen from '../src/features/quiz/quiz-setup-screen';
 import QuizPlayScreen from '../src/features/quiz/quiz-play-screen';
-import { useQuizSession } from '../src/features/quiz/quiz-session';
+import QuizHistoryScreen from '../src/features/quiz/quiz-history-screen';
+import { useQuizSession, type QuizHistoryEntry } from '../src/features/quiz/quiz-session';
+import { getQuestionsForCategories } from '../src/features/quiz/quiz-utils';
 
 jest.mock('expo-router', () => ({
   router: {
@@ -20,8 +22,10 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
+    setParams: jest.fn(),
   },
   usePreventRemove: jest.fn(() => jest.fn()),
+  useLocalSearchParams: jest.fn(() => ({})),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -121,11 +125,35 @@ jest.mock('@/features/quiz/quiz-session', () => ({
 }));
 
 const mockUseQuizSession = jest.mocked(useQuizSession);
+const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
 const mockUsePreventRemove = jest.mocked(usePreventRemove);
 const startSession = jest.fn();
 const setPosition = jest.fn();
 const completeSession = jest.fn();
 const disableRemovalPrevention = jest.fn();
+
+function makeHistoryEntry(overrides: Partial<QuizHistoryEntry> = {}): QuizHistoryEntry {
+  return {
+    id: 'quiz-test',
+    createdAt: '2026-10-27T10:00:00.000Z',
+    selectedCategories: ['AI'],
+    questions: [questions[0]],
+    currentPosition: 0,
+    ...overrides,
+  };
+}
+
+function setMockHistory(history: QuizHistoryEntry[]) {
+  mockUseQuizSession.mockReturnValue({
+    isHydrated: true,
+    history,
+    session: history[history.length - 1] ?? null,
+    persistenceError: false,
+    startSession,
+    setPosition,
+    completeSession,
+  });
+}
 
 describe('study screens', () => {
   afterEach(async () => {
@@ -136,14 +164,9 @@ describe('study screens', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUsePreventRemove.mockReturnValue(disableRemovalPrevention);
-    mockUseQuizSession.mockReturnValue({
-      isHydrated: true,
-      session: null,
-      persistenceError: false,
-      startSession,
-      setPosition,
-      completeSession,
-    });
+    mockUseLocalSearchParams.mockReturnValue({});
+    startSession.mockReturnValue('quiz-new');
+    setMockHistory([]);
   });
 
   it('shows the planned menu actions and enables Continue only with a restored session', async () => {
@@ -152,23 +175,13 @@ describe('study screens', () => {
     expect(screen.getByRole('heading', { name: 'Interview practice' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Start Random Quiz' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'View Questions' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Continue' }).props.accessibilityState).toMatchObject({
       disabled: true,
     });
     await emptySessionView.unmount();
 
-    mockUseQuizSession.mockReturnValue({
-      isHydrated: true,
-      session: {
-        selectedCategories: ['Javascript'],
-        questions: [questions[0]],
-        currentPosition: 0,
-      },
-      persistenceError: false,
-      startSession,
-      setPosition,
-      completeSession,
-    });
+    setMockHistory([makeHistoryEntry({ selectedCategories: ['Javascript'] })]);
     await render(<HomeScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
 
@@ -186,14 +199,16 @@ describe('study screens', () => {
     expect(setColorScheme).toHaveBeenCalledWith('dark');
   });
 
-  it('navigates from the menu to quiz setup and question browsing', async () => {
+  it('navigates from the menu to quiz setup, question browsing, and history', async () => {
     await render(<HomeScreen />);
 
     await fireEvent.press(screen.getByRole('button', { name: 'Start Random Quiz' }));
     await fireEvent.press(screen.getByRole('button', { name: 'View Questions' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'History' }));
 
     expect(router.push).toHaveBeenNthCalledWith(1, '/quiz/setup');
     expect(router.push).toHaveBeenNthCalledWith(2, '/questions');
+    expect(router.push).toHaveBeenNthCalledWith(3, '/quiz/history');
   });
 
   it('filters browse results and keeps the search value when a result is opened', async () => {
@@ -212,29 +227,81 @@ describe('study screens', () => {
     expect(screen.getByLabelText('Search questions').props.value).toBe(searchTerm);
   });
 
-  it('starts a shuffled quiz from the selected categories', async () => {
+  it('starts a shuffled quiz using the entered question count', async () => {
     await render(<QuizSetupScreen />);
 
     expect(screen.getAllByRole('checkbox')).toHaveLength(questionCategories.length);
+    const countInput = screen.getByLabelText('Max questions');
+    await waitFor(() => expect(countInput.props.value).toBe(String(questions.length)));
+    await fireEvent.changeText(countInput, '2');
     await fireEvent.press(screen.getByRole('button', { name: 'Start quiz' }));
 
-    expect(startSession).toHaveBeenCalledWith(
-      questionCategories,
-      expect.arrayContaining([expect.objectContaining({ question: questions[0].question })]),
-    );
-    expect(router.replace).toHaveBeenCalledWith('/quiz/play');
+    const [selected, generated] = startSession.mock.calls[0] as [string[], Question[]];
+    expect(selected).toEqual(questionCategories);
+    expect(generated).toHaveLength(2);
+    expect(generated.every((question) => selected.includes(question.category))).toBe(true);
+    expect(router.replace).toHaveBeenCalledWith('/quiz/play?quizId=quiz-new');
   });
 
-  it('disables quiz start when every category is deselected', async () => {
+  it('cycles bulk selection labels, clamps the count, and disables setup with no categories', async () => {
     await render(<QuizSetupScreen />);
 
-    for (const category of questionCategories) {
-      await fireEvent.press(screen.getByRole('checkbox', { name: getCategoryLabel(category) }));
-    }
+    const countInput = screen.getByLabelText('Max questions');
+    await waitFor(() => expect(countInput.props.value).toBe(String(questions.length)));
+    await fireEvent.changeText(countInput, '0');
+    expect(countInput.props.value).toBe('1');
+    await fireEvent.changeText(countInput, '999');
+    expect(countInput.props.value).toBe(String(questions.length));
 
+    await fireEvent.press(screen.getByRole('checkbox', {
+      name: getCategoryLabel(questionCategories[0]),
+    }));
+    expect(screen.getByRole('button', { name: 'Select remaining' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Select remaining' }));
+    expect(screen.getByRole('button', { name: 'Unselect all' })).toBeTruthy();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Unselect all' }));
+    expect(screen.getByRole('button', { name: 'Select all' })).toBeTruthy();
+    expect(countInput.props.editable).toBe(false);
     expect(screen.getByRole('button', { name: 'Start quiz' }).props.accessibilityState).toMatchObject({
       disabled: true,
     });
+
+    const selectedCategory = questionCategories[0];
+    await fireEvent.press(screen.getByRole('checkbox', { name: getCategoryLabel(selectedCategory) }));
+    const expectedMaximum = getQuestionsForCategories([selectedCategory]).length;
+    expect(screen.getByRole('button', { name: 'Select remaining' })).toBeTruthy();
+    await waitFor(() => expect(countInput.props.value).toBe(String(expectedMaximum)));
+    await fireEvent.press(screen.getByRole('button', { name: 'Select remaining' }));
+    expect(screen.getByRole('button', { name: 'Unselect all' })).toBeTruthy();
+  });
+
+  it('lists histories with expandable category badges and opens a selected record', async () => {
+    const older = makeHistoryEntry({
+      id: 'quiz-older',
+      createdAt: '2026-10-27T10:00:00.000Z',
+      selectedCategories: ['AI'],
+      questions: [questions[0], questions[1]],
+    });
+    const newer = makeHistoryEntry({
+      id: 'quiz-newer',
+      createdAt: '2026-10-28T10:00:00.000Z',
+      selectedCategories: ['JavascriptCode'],
+      questions: [questions[2]],
+    });
+    setMockHistory([older, newer]);
+    const view = await render(<QuizHistoryScreen />);
+
+    expect(view.getByText('Questions 1/1')).toBeTruthy();
+    expect(view.getByText('Questions 1/2')).toBeTruthy();
+    await fireEvent.press(view.getAllByRole('button', { name: /Show categories/ })[0]);
+    expect(view.getByText('JavaScript Code')).toBeTruthy();
+
+    const openRows = view
+      .getAllByRole('button')
+      .filter((button) => String(button.props.accessibilityLabel).startsWith('Open quiz created'));
+    await fireEvent.press(openRows[1]);
+    expect(router.push).toHaveBeenCalledWith('/quiz/play?quizId=quiz-older');
   });
 
   it('reveals answers progressively and gates the quiz CTA on the full answer', async () => {
@@ -314,22 +381,18 @@ describe('study screens', () => {
     expect(onReturn).not.toHaveBeenCalled();
   });
 
-  it('shows completion after the final full answer, clears the session, and returns home', async () => {
-    mockUseQuizSession.mockReturnValue({
-      isHydrated: true,
-      session: { selectedCategories: ['AI'], questions: [questions[0]], currentPosition: 0 },
-      persistenceError: false,
-      startSession,
-      setPosition,
-      completeSession,
-    });
+  it('shows completion after the final full answer, retains the session, and returns home', async () => {
+    setMockHistory([makeHistoryEntry({ selectedCategories: ['AI'] })]);
     const view = await render(<QuizPlayScreen />);
 
     await fireEvent.press(view.getByRole('button', { name: 'See answer' }));
     await fireEvent.press(view.getByRole('button', { name: 'See full answer' }));
     await fireEvent.press(view.getByRole('button', { name: 'Finish Quiz' }));
 
-    expect(completeSession).toHaveBeenCalledTimes(1);
+    expect(completeSession).toHaveBeenCalledWith('quiz-test');
+    expect(router.setParams).toHaveBeenCalledWith({ completed: 'true' });
+    mockUseLocalSearchParams.mockReturnValue({ completed: 'true' });
+    await view.rerender(<QuizPlayScreen />);
     expect(view.getByRole('heading', { name: 'Quiz complete' })).toBeTruthy();
     await fireEvent.press(view.getByRole('button', { name: 'Return to menu' }));
     expect(router.replace).toHaveBeenCalledWith('/');
@@ -345,35 +408,23 @@ describe('study screens', () => {
       return subscription;
     });
 
-    mockUseQuizSession.mockReturnValue({
-      isHydrated: true,
-      session: {
+    setMockHistory([
+      makeHistoryEntry({
         selectedCategories: ['AI'],
         questions: [questions[0], questions[1]],
         currentPosition: 1,
-      },
-      persistenceError: false,
-      startSession,
-      setPosition,
-      completeSession,
-    });
+      }),
+    ]);
     const laterQuestion = await render(<QuizPlayScreen />);
     await waitFor(() => expect(backHandler).toBeDefined());
     await act(async () => {
       expect(backHandler?.({} as HardwareBackEvent)).toBe(true);
     });
-    expect(setPosition).toHaveBeenCalledWith(0);
+    expect(setPosition).toHaveBeenCalledWith('quiz-test', 0);
     await laterQuestion.unmount();
 
     backHandler = undefined;
-    mockUseQuizSession.mockReturnValue({
-      isHydrated: true,
-      session: { selectedCategories: ['AI'], questions: [questions[0]], currentPosition: 0 },
-      persistenceError: false,
-      startSession,
-      setPosition,
-      completeSession,
-    });
+    setMockHistory([makeHistoryEntry({ selectedCategories: ['AI'] })]);
     await render(<QuizPlayScreen />);
     await waitFor(() => expect(backHandler).toBeDefined());
     await act(async () => {
@@ -387,18 +438,13 @@ describe('study screens', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
 
     try {
-      mockUseQuizSession.mockReturnValue({
-        isHydrated: true,
-        session: {
+      setMockHistory([
+        makeHistoryEntry({
           selectedCategories: ['AI'],
           questions: [questions[0], questions[1]],
           currentPosition: 1,
-        },
-        persistenceError: false,
-        startSession,
-        setPosition,
-        completeSession,
-      });
+        }),
+      ]);
       const view = await render(<QuizPlayScreen />);
       const [shouldPreventRemoval, onPreventedRemoval] = mockUsePreventRemove.mock.calls.at(-1) ?? [];
 
@@ -406,7 +452,7 @@ describe('study screens', () => {
       await act(async () => {
         onPreventedRemoval?.({ data: { action: { type: 'GO_BACK' } }, repeat: jest.fn() });
       });
-      expect(setPosition).toHaveBeenCalledWith(0);
+      expect(setPosition).toHaveBeenCalledWith('quiz-test', 0);
 
       await fireEvent.press(view.getByRole('button', { name: 'Return to menu' }));
       expect(disableRemovalPrevention).toHaveBeenCalledTimes(1);

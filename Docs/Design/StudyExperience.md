@@ -12,9 +12,9 @@ Tools, System Design, Backend, and JavaScript code-output questions. It does not
 submit answers, grade responses, award points, or compete. Questions can be reviewed alone or
 discussed with another person.
 
-The home menu presents three actions: **Start Random Quiz**, **View Questions**, and **Continue**.
-Continue is always visible, remains disabled until session hydration completes, and is enabled only
-when an unfinished quiz is available.
+The home menu presents four actions: **Start Random Quiz**, **View Questions**, **Continue**, and
+**History**. Continue remains disabled until history hydration completes and opens the newest-created
+quiz record. History is always available and lists saved records.
 
 The menu also offers a light/dark appearance toggle that switches to the other appearance. Use a
 Material Icon to identify the mode action and expose its target appearance in the accessible
@@ -25,11 +25,18 @@ label.
 Quiz setup derives its categories from the distinct `category` values in `src/data/db.json` and
 selects all of them by default. `ComputerScience` is displayed as “Computer Science”, `AI` as “AI
 Tools”, `SystemDesign` as “System Design”, and `JavascriptCode` as “JavaScript Code”; source
-values remain unchanged. At least one category must be selected to start.
+values remain unchanged.
 
-Starting a quiz includes every catalog question in the selected categories, shuffles a copy once,
-and preserves that ordered list for the session. The source catalog is never mutated and every
-selected question appears once in that quiz.
+A bulk selection action selects all categories when none are selected, selects the remaining
+categories for a partial selection, and clears all when every category is selected. At least one
+category must be selected to start.
+
+The Max questions field defaults to the total questions available across selected categories. Its
+integer value is clamped to the range from 1 through that maximum; category changes recalculate the
+maximum and clamp the edited value.
+
+Starting a quiz takes the requested number of questions from the combined selected-category pool
+after shuffling. No question appears more than once, and the source catalog is never mutated.
 
 The shared question view displays the question first. For `JavascriptCode`, it displays the fixed
 prompt “What this code do?” and the raw `question` value in a monospace code block. **See answer**
@@ -40,14 +47,14 @@ reference links; their answers give the Node.js output and explanation. In quiz 
 Question** (or **Finish Quiz** on the last question) is shown after the full answer is revealed.
 Previous and next controls and horizontal swipes also navigate while answers are hidden. Mobile
 system back moves to the previous quiz position, or returns to the menu from the first question.
-Returning to the menu keeps the unfinished snapshot.
+Returning to the menu keeps the quiz record and its saved position.
 
 A copy icon beside the prompt copies the stored `question` value verbatim. For `JavascriptCode`, it
 copies the raw snippet; the action is available in both browse and quiz modes. The icon follows the
 selected theme and reports clipboard failures with an error icon.
 
-After the last question, show a completion state with a return-to-menu action and clear the
-unfinished quiz session.
+After the last question, show a completion state with a return-to-menu action and mark the history
+record completed while preserving it and its latest question position.
 
 ## Browse questions
 
@@ -63,13 +70,15 @@ list** instead of quiz controls. Returning to the list preserves its category an
 Browser history and mobile system back return to the list; a right swipe also returns from detail to
 the list.
 
-## Continue
+## Continue and history
 
-Keep at most one unfinished quiz snapshot on the device in AsyncStorage. It contains the selected
-categories, exact ordered question data, and current question position. Continue restores that
-snapshot and position, including after the app is closed and reopened. Invalid saved data is removed
-and treated as no session. Answer-reveal state is not part of the snapshot and starts collapsed
-after a question change or resume.
+Persist every quiz record on the device in AsyncStorage with its creation time, selected categories,
+exact ordered question data, current position, and optional completion time. Continue always opens
+the newest-created record. Starting a quiz appends a record, navigation updates that record's
+position, and completion marks it without deleting it. A valid snapshot saved by older versions is
+migrated into history. Answer-reveal state is not stored and starts collapsed after a question change
+or resume.
 
-Returning to the menu or closing the app keeps the snapshot. Starting a new quiz replaces it;
-finishing a quiz clears it. There is no Continue session after completion.
+The History page lists records newest first. Each row shows its creation time and current question
+position out of the total. Expanding a row shows every selected category as a badge. Opening a row
+loads that record at its saved question; it does not change which record Continue opens.

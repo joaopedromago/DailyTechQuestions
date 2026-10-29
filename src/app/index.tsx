@@ -87,6 +87,15 @@ export default function HomeScreen() {
             >
               <ButtonText>Continue</ButtonText>
             </Button>
+            <Button
+              accessibilityLabel="History"
+              className="w-full"
+              size="lg"
+              variant="secondary"
+              onPress={() => router.push("/quiz/history" as Href)}
+            >
+              <ButtonText>History</ButtonText>
+            </Button>
             {persistenceError ? (
               <Text accessibilityRole="alert" className="text-sm text-destructive">
                 Saved quiz progress could not be read or written.

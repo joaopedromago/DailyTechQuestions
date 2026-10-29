@@ -18,6 +18,14 @@ export function shuffleQuestions<T>(items: readonly T[], random = Math.random): 
   return shuffled;
 }
 
-export function createQuizQuestions(selectedCategories: readonly string[]): Question[] {
-  return shuffleQuestions(getQuestionsForCategories(selectedCategories));
+export function createQuizQuestions(
+  selectedCategories: readonly string[],
+  questionCount: number,
+): Question[] {
+  const availableQuestions = getQuestionsForCategories(selectedCategories);
+  const count = Number.isFinite(questionCount)
+    ? Math.max(0, Math.min(availableQuestions.length, Math.floor(questionCount)))
+    : availableQuestions.length;
+
+  return shuffleQuestions(availableQuestions).slice(0, count);
 }

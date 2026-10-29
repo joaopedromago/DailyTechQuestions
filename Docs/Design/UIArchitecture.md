@@ -43,12 +43,16 @@ study menu; Expo Router routes compose feature screens for question browsing and
 
 ## State and persistence ownership
 
-Use React Context and `useReducer` for the shared quiz session; do not add a separate global state
-library for this feature. The session state contains the ordered question snapshot, selected
-categories, and current position. Its storage adapter belongs with the quiz feature and stores one
-serialized session in AsyncStorage, following [Expo's storage guidance](https://docs.expo.dev/develop/user-interface/store-data/).
+Use React Context and `useReducer` for shared quiz history; do not add a separate global state
+library for this feature. Each record contains its ordered question snapshot, selected categories,
+creation time, current position, and optional completion time. The quiz feature's storage adapter
+stores the versioned history in AsyncStorage, following
+[Expo's storage guidance](https://docs.expo.dev/develop/user-interface/store-data/).
 
-Hydrate the session before enabling Continue. Update the stored position as quiz navigation occurs.
+Hydrate history before enabling Continue. Update the selected record's stored position as quiz
+navigation occurs. Continue targets the newest-created record, while a history selection opens that
+specific record.
+
 Question answer disclosure and question-list search/category filters remain screen-local UI state;
 answer disclosure does not persist. The list remains mounted under its detail route so filters are
 available when returning.
