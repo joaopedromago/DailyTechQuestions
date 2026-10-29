@@ -4,12 +4,15 @@ import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Checkbox } from '@/components/shared/checkbox';
+import { Dropdown, type DropdownOption } from '@/components/shared/dropdown';
 import { Input } from '@/components/shared/input';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/shared/button';
 import { Text } from '@/components/ui/text';
 import { getCategoryLabel } from '@/data/questions';
 import { getQuestionCategories } from '@/features/questions/question-utils';
+import { type QuestionCheckFilter } from '@/features/questions/question-check-utils';
+import { useQuestionChecks } from '@/features/questions/question-checks';
 
 import { createQuizQuestions, getQuestionsForCategories } from './quiz-utils';
 import { useQuizSession } from './quiz-session';
@@ -18,6 +21,12 @@ function clampQuestionCount(value: number, maximum: number) {
   return Math.max(1, Math.min(Math.floor(value), maximum));
 }
 
+const CHECK_FILTER_OPTIONS: readonly DropdownOption<QuestionCheckFilter>[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Only checked', value: 'checked' },
+  { label: 'Only unchecked', value: 'unchecked' },
+];
+
 export default function QuizSetupScreen() {
   const categories = useMemo(() => getQuestionCategories(), []);
   const initialMaximumQuestions = useMemo(
@@ -25,18 +34,28 @@ export default function QuizSetupScreen() {
     [categories],
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
+  const [questionCheckFilter, setQuestionCheckFilter] = useState<QuestionCheckFilter>('all');
   const [questionCountText, setQuestionCountText] = useState(String(initialMaximumQuestions));
   const [lastValidQuestionCount, setLastValidQuestionCount] = useState(initialMaximumQuestions);
   const [hasEditedQuestionCount, setHasEditedQuestionCount] = useState(false);
-  const maximumQuestions = useMemo(
-    () => getQuestionsForCategories(selectedCategories).length,
-    [selectedCategories],
-  );
+  const {
+    isHydrated: areQuestionChecksHydrated,
+    loadError: questionChecksLoadError,
+    persistenceError: questionChecksPersistenceError,
+    checkedQuestionKeySet,
+  } = useQuestionChecks();
+  const getMaximumForSelection = (
+    nextCategories: readonly string[],
+    checkFilter: QuestionCheckFilter = questionCheckFilter,
+  ) =>
+    getQuestionsForCategories(nextCategories, {
+      checkFilter,
+      checkedQuestionKeys: checkedQuestionKeySet,
+    }).length;
+  const maximumQuestions = getMaximumForSelection(selectedCategories);
   const { isHydrated, persistenceError, startSession } = useQuizSession();
 
-  const updateCategories = (nextCategories: string[]) => {
-    setSelectedCategories(nextCategories);
-    const nextMaximum = getQuestionsForCategories(nextCategories).length;
+  const updateQuestionCountForMaximum = (nextMaximum: number) => {
     if (nextMaximum === 0) {
       setQuestionCountText('');
       return;
@@ -55,6 +74,11 @@ export default function QuizSetupScreen() {
     setLastValidQuestionCount(clampedValue);
   };
 
+  const updateCategories = (nextCategories: string[]) => {
+    setSelectedCategories(nextCategories);
+    updateQuestionCountForMaximum(getMaximumForSelection(nextCategories));
+  };
+
   const toggleCategory = (category: string) => {
     const nextCategories = selectedCategories.includes(category)
       ? selectedCategories.filter((item) => item !== category)
@@ -71,6 +95,11 @@ export default function QuizSetupScreen() {
 
   const toggleBulkSelection = () => {
     updateCategories(selectedCategories.length === categories.length ? [] : [...categories]);
+  };
+
+  const updateQuestionCheckFilter = (nextFilter: QuestionCheckFilter) => {
+    setQuestionCheckFilter(nextFilter);
+    updateQuestionCountForMaximum(getMaximumForSelection(selectedCategories, nextFilter));
   };
 
   const handleQuestionCountChange = (text: string) => {
@@ -98,8 +127,24 @@ export default function QuizSetupScreen() {
     parsedQuestionCount <= maximumQuestions;
 
   const startQuiz = () => {
-    if (!isHydrated || selectedCategories.length === 0 || !hasValidQuestionCount) return;
-    const quizQuestions = createQuizQuestions(selectedCategories, parsedQuestionCount);
+    if (
+      !isHydrated ||
+      !areQuestionChecksHydrated ||
+      (questionChecksLoadError && questionCheckFilter !== 'all') ||
+      selectedCategories.length === 0 ||
+      !hasValidQuestionCount
+    ) {
+      return;
+    }
+    const selectionOptions = {
+      checkFilter: questionCheckFilter,
+      checkedQuestionKeys: checkedQuestionKeySet,
+    };
+    const quizQuestions = createQuizQuestions(
+      selectedCategories,
+      parsedQuestionCount,
+      selectionOptions,
+    );
     if (quizQuestions.length === 0) return;
 
     const quizId = startSession(selectedCategories, quizQuestions);
@@ -151,6 +196,15 @@ export default function QuizSetupScreen() {
             ))}
           </Box>
 
+          <Dropdown
+            isDisabled={!areQuestionChecksHydrated || questionChecksLoadError}
+            label="Question status"
+            options={CHECK_FILTER_OPTIONS}
+            testID="question-check-filter"
+            value={questionCheckFilter}
+            onValueChange={updateQuestionCheckFilter}
+          />
+
           <Box className="gap-2">
             <Text className="font-semibold text-foreground">Max questions</Text>
             <Input
@@ -176,8 +230,23 @@ export default function QuizSetupScreen() {
             </Text>
           </Box>
 
+          {maximumQuestions === 0 && selectedCategories.length > 0 ? (
+            <Text className="text-sm text-muted-foreground">
+              No questions match the selected categories and question status.
+            </Text>
+          ) : null}
           {selectedCategories.length === 0 ? (
             <Text className="text-sm text-destructive">Select at least one category to start.</Text>
+          ) : null}
+          {questionChecksLoadError ? (
+            <Text accessibilityRole="alert" className="text-sm text-destructive">
+              Saved question check status could not be loaded. Question status filtering is
+              unavailable.
+            </Text>
+          ) : questionChecksPersistenceError ? (
+            <Text accessibilityRole="alert" className="text-sm text-destructive">
+              Question check status could not be saved.
+            </Text>
           ) : null}
           {persistenceError ? (
             <Text accessibilityRole="alert" className="text-sm text-destructive">
@@ -187,10 +256,18 @@ export default function QuizSetupScreen() {
 
           <Button
             accessibilityLabel="Start quiz"
-            isDisabled={!isHydrated || selectedCategories.length === 0 || !hasValidQuestionCount}
+            isDisabled={
+              !isHydrated ||
+              !areQuestionChecksHydrated ||
+              (questionChecksLoadError && questionCheckFilter !== 'all') ||
+              selectedCategories.length === 0 ||
+              !hasValidQuestionCount
+            }
             onPress={startQuiz}
           >
-            <ButtonText>{isHydrated ? 'Start Quiz' : 'Loading…'}</ButtonText>
+            <ButtonText>
+              {isHydrated && areQuestionChecksHydrated ? 'Start Quiz' : 'Loading…'}
+            </ButtonText>
           </Button>
         </ScrollView>
       </Box>

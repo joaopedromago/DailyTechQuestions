@@ -1,9 +1,30 @@
 import { questions, type Question } from '@/data/questions';
+import {
+  matchesQuestionCheckFilter,
+  type QuestionCheckFilter,
+} from '@/features/questions/question-check-utils';
 
-export function getQuestionsForCategories(selectedCategories: readonly string[]) {
+type QuestionSelectionOptions = {
+  checkFilter?: QuestionCheckFilter;
+  checkedQuestionKeys?: ReadonlySet<string>;
+};
+
+const EMPTY_CHECKED_QUESTION_KEYS: ReadonlySet<string> = new Set();
+
+export function getQuestionsForCategories(
+  selectedCategories: readonly string[],
+  {
+    checkFilter = 'all',
+    checkedQuestionKeys = EMPTY_CHECKED_QUESTION_KEYS,
+  }: QuestionSelectionOptions = {},
+) {
   const selected = new Set(selectedCategories);
   return questions
-    .filter(({ category }) => selected.has(category))
+    .filter(
+      (question) =>
+        selected.has(question.category) &&
+        matchesQuestionCheckFilter(question, checkFilter, checkedQuestionKeys),
+    )
     .map((question) => ({ ...question, referenceUrls: [...question.referenceUrls] }));
 }
 
@@ -21,8 +42,9 @@ export function shuffleQuestions<T>(items: readonly T[], random = Math.random): 
 export function createQuizQuestions(
   selectedCategories: readonly string[],
   questionCount: number,
+  selectionOptions: QuestionSelectionOptions = {},
 ): Question[] {
-  const availableQuestions = getQuestionsForCategories(selectedCategories);
+  const availableQuestions = getQuestionsForCategories(selectedCategories, selectionOptions);
   const count = Number.isFinite(questionCount)
     ? Math.max(0, Math.min(availableQuestions.length, Math.floor(questionCount)))
     : availableQuestions.length;

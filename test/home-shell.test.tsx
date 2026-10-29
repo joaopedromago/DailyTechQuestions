@@ -10,6 +10,7 @@ import {
   questionCategories,
   type Question,
 } from '../src/data/questions';
+import { getQuestionCheckKey } from '../src/features/questions/question-check-utils';
 import QuestionBrowsingScreen from '../src/features/questions/question-browsing-screen';
 import {
   handleQuestionSwipe,
@@ -19,6 +20,7 @@ import QuizSetupScreen from '../src/features/quiz/quiz-setup-screen';
 import QuizPlayScreen from '../src/features/quiz/quiz-play-screen';
 import QuizHistoryScreen from '../src/features/quiz/quiz-history-screen';
 import { useQuizSession, type QuizHistoryEntry } from '../src/features/quiz/quiz-session';
+import { useQuestionChecks } from '../src/features/questions/question-checks';
 import { getQuestionsForCategories } from '../src/features/quiz/quiz-utils';
 
 jest.mock('expo-router', () => ({
@@ -49,6 +51,44 @@ jest.mock('@react-native-vector-icons/material-icons', () => {
   return {
     MaterialIcons: ({ color, name, testID }: { color?: string; name: string; testID?: string }) =>
       React.createElement(Text, { color, testID }, name),
+  };
+});
+
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual('react');
+  const { Pressable, Text, View } = jest.requireActual('react-native');
+
+  const Picker: any = ({
+    children,
+    enabled = true,
+    onValueChange,
+    selectedValue,
+    testID,
+  }: Record<string, any>) =>
+    React.createElement(
+      View,
+      { testID },
+      React.Children.toArray(children).map((option: any) =>
+        React.createElement(
+          Pressable,
+          {
+            accessibilityLabel: option.props.label,
+            accessibilityRole: 'button',
+            accessibilityState: { selected: option.props.value === selectedValue },
+            disabled: !enabled,
+            key: option.props.value,
+            onPress: () => onValueChange(option.props.value),
+          },
+          React.createElement(Text, null, option.props.label),
+        ),
+      ),
+    );
+  Picker.Item = () => null;
+
+  return {
+    Host: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children),
+    Picker,
   };
 });
 
@@ -129,14 +169,24 @@ jest.mock('@/components/external-link', () => {
 jest.mock('@/features/quiz/quiz-session', () => ({
   useQuizSession: jest.fn(),
 }));
+jest.mock('@/features/questions/question-checks', () => ({
+  useQuestionChecks: jest.fn(),
+}));
 
 const mockUseQuizSession = jest.mocked(useQuizSession);
+const mockUseQuestionChecks = jest.mocked(useQuestionChecks);
 const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
 const mockUsePreventRemove = jest.mocked(usePreventRemove);
 const startSession = jest.fn();
 const setPosition = jest.fn();
 const completeSession = jest.fn();
 const disableRemovalPrevention = jest.fn();
+const mockCheckedQuestionKeys = new Set<string>();
+const mockToggleQuestion = jest.fn((question: Pick<Question, 'category' | 'question'>) => {
+  const key = getQuestionCheckKey(question);
+  if (mockCheckedQuestionKeys.has(key)) mockCheckedQuestionKeys.delete(key);
+  else mockCheckedQuestionKeys.add(key);
+});
 
 function makeHistoryEntry(overrides: Partial<QuizHistoryEntry> = {}): QuizHistoryEntry {
   return {
@@ -169,6 +219,15 @@ describe('study screens', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCheckedQuestionKeys.clear();
+    mockUseQuestionChecks.mockReturnValue({
+      isHydrated: true,
+      loadError: false,
+      persistenceError: false,
+      checkedQuestionKeySet: mockCheckedQuestionKeys,
+      isQuestionChecked: (question) => mockCheckedQuestionKeys.has(getQuestionCheckKey(question)),
+      toggleQuestion: mockToggleQuestion,
+    });
     mockUsePreventRemove.mockReturnValue(disableRemovalPrevention);
     mockUseLocalSearchParams.mockReturnValue({});
     startSession.mockReturnValue('quiz-new');
@@ -249,6 +308,45 @@ describe('study screens', () => {
     expect(generated).toHaveLength(2);
     expect(generated.every((question) => selected.includes(question.category))).toBe(true);
     expect(router.replace).toHaveBeenCalledWith('/quiz/play?quizId=quiz-new');
+  });
+
+  it('filters the quiz pool by checked status and updates the maximum question count', async () => {
+    const pool = getQuestionsForCategories(questionCategories);
+    const checkedQuestions = [pool[0], pool[2]];
+    for (const question of checkedQuestions) {
+      mockCheckedQuestionKeys.add(getQuestionCheckKey(question));
+    }
+
+    await render(<QuizSetupScreen />);
+
+    const countInput = screen.getByLabelText('Max questions');
+    await waitFor(() => expect(countInput.props.value).toBe(String(questions.length)));
+    await fireEvent.press(screen.getByRole('button', { name: 'Only checked' }));
+    expect(countInput.props.value).toBe(String(checkedQuestions.length));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Start quiz' }));
+
+    const [, generated] = startSession.mock.calls[0] as [string[], Question[]];
+    expect(generated.map(getQuestionCheckKey).sort()).toEqual(
+      checkedQuestions.map(getQuestionCheckKey).sort(),
+    );
+  });
+
+  it('disables quiz start and explains when a status filter has no matching questions', async () => {
+    await render(<QuizSetupScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Only checked' }));
+
+    expect(screen.getByText('Maximum: 0 questions across selected categories.')).toBeTruthy();
+    expect(
+      screen.getByText('No questions match the selected categories and question status.'),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('Max questions').props.editable).toBe(false);
+    expect(
+      screen.getByRole('button', { name: 'Start quiz' }).props.accessibilityState,
+    ).toMatchObject({
+      disabled: true,
+    });
   });
 
   it('cycles bulk selection labels, clamps the count, and disables setup with no categories', async () => {
@@ -383,6 +481,38 @@ describe('study screens', () => {
       />,
     );
     expect(view.queryByText('Quick response.')).toBeNull();
+  });
+
+  it('shows and toggles the persisted check icon beside the quiz question counter only', async () => {
+    const question = questions[0];
+    const props = {
+      disclosureKey: 'quiz-question',
+      mode: 'quiz' as const,
+      positionLabel: 'Question 1 of 1',
+      question,
+      onReturn: jest.fn(),
+    };
+    const view = await render(<QuestionDetailView {...props} />);
+
+    expect(view.getByText('Question 1 of 1')).toBeTruthy();
+    expect(view.getByRole('checkbox', { name: 'Mark question checked' })).toBeTruthy();
+    expect(view.getByTestId('question-check-icon').props.children).toBe('check-box-outline-blank');
+
+    await fireEvent.press(view.getByRole('checkbox', { name: 'Mark question checked' }));
+    await view.rerender(<QuestionDetailView {...props} />);
+
+    expect(
+      view.getByRole('checkbox', { name: 'Mark question unchecked' }).props.accessibilityState,
+    ).toMatchObject({
+      checked: true,
+    });
+    expect(view.getByTestId('question-check-icon').props.children).toBe('check-box');
+
+    await view.unmount();
+    const browseView = await render(
+      <QuestionDetailView {...props} mode="browse" positionLabel={undefined} />,
+    );
+    expect(browseView.queryByTestId('question-check-toggle')).toBeNull();
   });
 
   it('routes left and right horizontal swipes to quiz navigation', () => {

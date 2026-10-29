@@ -1,4 +1,5 @@
 import { questions } from '../src/data/questions';
+import { getQuestionCheckKey } from '../src/features/questions/question-check-utils';
 import { createQuizQuestions, getQuestionsForCategories } from '../src/features/quiz/quiz-utils';
 
 describe('quiz question selection', () => {
@@ -22,5 +23,51 @@ describe('quiz question selection', () => {
 
     expect(selectedQuestions).toHaveLength(getQuestionsForCategories(selectedCategories).length);
     expect(questions).toEqual(originalQuestions);
+  });
+
+  it('filters the selected-category pool by checked, unchecked, or all status before sampling', () => {
+    const category = [...new Set(questions.map(({ category }) => category))].find(
+      (candidate) =>
+        questions.filter(({ category: questionCategory }) => questionCategory === candidate)
+          .length >= 2,
+    );
+    expect(category).toBeDefined();
+    const categoryQuestions = questions.filter(
+      ({ category: questionCategory }) => questionCategory === category,
+    );
+    const differentCategoryQuestion = questions.find(
+      ({ category: questionCategory }) => questionCategory !== category,
+    );
+    expect(differentCategoryQuestion).toBeDefined();
+
+    const checkedQuestionKeys = new Set([
+      getQuestionCheckKey(categoryQuestions[0]),
+      getQuestionCheckKey(differentCategoryQuestion!),
+    ]);
+    const checkedQuestions = getQuestionsForCategories([category!], {
+      checkFilter: 'checked',
+      checkedQuestionKeys,
+    });
+    const uncheckedQuestions = getQuestionsForCategories([category!], {
+      checkFilter: 'unchecked',
+      checkedQuestionKeys,
+    });
+    const allQuestions = getQuestionsForCategories([category!], {
+      checkFilter: 'all',
+      checkedQuestionKeys,
+    });
+
+    expect(checkedQuestions.map(getQuestionCheckKey)).toEqual([
+      getQuestionCheckKey(categoryQuestions[0]),
+    ]);
+    expect(uncheckedQuestions.map(getQuestionCheckKey)).toEqual(
+      categoryQuestions.slice(1).map(getQuestionCheckKey),
+    );
+    expect(allQuestions).toHaveLength(categoryQuestions.length);
+    expect(
+      createQuizQuestions([category!], 10, { checkFilter: 'checked', checkedQuestionKeys }).map(
+        getQuestionCheckKey,
+      ),
+    ).toEqual([getQuestionCheckKey(categoryQuestions[0])]);
   });
 });

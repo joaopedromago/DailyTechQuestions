@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { QuestionChecksProvider } from '@/features/questions/question-checks';
 import { QuizSessionProvider } from '@/features/quiz/quiz-session';
 
 import '@/global.css';
@@ -20,15 +21,17 @@ export default function TabLayout() {
       <GluestackUIProvider mode="system">
         <SafeAreaProvider>
           <QuizSessionProvider>
-            <AnimatedSplashOverlay />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="questions" />
-              <Stack.Screen name="questions/[questionIndex]" />
-              <Stack.Screen name="quiz/setup" />
-              <Stack.Screen name="quiz/history" />
-              <Stack.Screen name="quiz/play" />
-            </Stack>
+            <QuestionChecksProvider>
+              <AnimatedSplashOverlay />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="questions" />
+                <Stack.Screen name="questions/[questionIndex]" />
+                <Stack.Screen name="quiz/setup" />
+                <Stack.Screen name="quiz/history" />
+                <Stack.Screen name="quiz/play" />
+              </Stack>
+            </QuestionChecksProvider>
           </QuizSessionProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

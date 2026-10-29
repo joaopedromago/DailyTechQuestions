@@ -31,23 +31,27 @@ areas, gestures, system back, and opening reference URLs.
 - Keep Expo Router route declarations and layouts in `src/app/`; routes compose feature screens.
 - Keep gluestack-generated components in `src/components/ui/` and app-wide shared components in
   `src/components/`.
-- Place reusable buttons, inputs, and checkboxes in `src/components/shared/button/`,
-  `src/components/shared/input/`, and `src/components/shared/checkbox/`. Each control exposes
+- Place reusable buttons, inputs, checkboxes, and dropdowns in
+  `src/components/shared/button/`, `src/components/shared/input/`,
+  `src/components/shared/checkbox/`, and `src/components/shared/dropdown/`. Each control exposes
   deliberate variants and is reused by feature screens.
 - Keep study feature screens, behavior, and feature-specific hooks in `src/features/questions/` and
   `src/features/quiz/`.
 - Keep the static question catalog and its shared types in `src/data/`.
 
-The root layout owns the gluestack and shared quiz-session providers. The home route presents the
-study menu; Expo Router routes compose feature screens for question browsing and quiz flows.
+The root layout owns the gluestack, quiz-session, and question-check providers. The home route
+presents the study menu; Expo Router routes compose feature screens for question browsing and quiz
+flows.
 
 ## State and persistence ownership
 
-Use React Context and `useReducer` for shared quiz history; do not add a separate global state
-library for this feature. Each record contains its ordered question snapshot, selected categories,
-creation time, current position, and optional completion time. The quiz feature's storage adapter
-stores the versioned history in AsyncStorage, following
+Use React Context and `useReducer` for shared quiz history and checked-question state; do not add a
+separate global state library for this feature. Each quiz record contains its ordered question
+snapshot, selected categories, creation time, current position, and optional completion time. The
+quiz feature's storage adapter stores the versioned history in AsyncStorage, following
 [Expo's storage guidance](https://docs.expo.dev/develop/user-interface/store-data/).
+The question feature stores checked-question keys separately in AsyncStorage, keyed by category and
+prompt.
 
 Hydrate history before enabling Continue. Update the selected record's stored position as quiz
 navigation occurs. Continue targets the newest-created record, while a history selection opens that

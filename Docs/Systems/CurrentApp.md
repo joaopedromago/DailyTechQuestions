@@ -7,8 +7,8 @@ This document describes the current app shell and data ownership. Study behavior
 
 The project uses Expo SDK 58, React Native, TypeScript, and Expo Router. The root layout in
 [`src/app/_layout.tsx`](../../src/app/_layout.tsx) imports the global stylesheet and wraps the route
-stack with the Expo Router theme provider, gluestack provider, and safe-area provider. It retains the
-configured animated splash overlay.
+stack with the Expo Router theme provider, gluestack provider, safe-area provider, quiz-session
+provider, and question-check provider. It retains the configured animated splash overlay.
 
 [`src/app/index.tsx`](../../src/app/index.tsx) displays the study menu: Start Random Quiz, View
 Questions, Continue, and History. Continue becomes enabled after history hydration when a quiz
@@ -22,17 +22,21 @@ consistent when navigating between routes.
 [`question-utils.ts`](../../src/features/questions/question-utils.ts). Selecting a result pushes
 `/questions/[questionIndex]`, which uses
 [`question-detail-view.tsx`](../../src/features/questions/question-detail-view.tsx) and preserves
-list state underneath. `/quiz/setup` selects categories and a question count, then creates a shuffled
-sample. `/quiz/history` lists saved records and category badges. `/quiz/play` loads the newest-created
-record for Continue or a selected record by ID for History.
+list state underneath. `/quiz/setup` selects categories, a question check-status filter, and a
+question count, then creates a shuffled sample. `/quiz/history` lists saved records and category
+badges. `/quiz/play` loads the newest-created record for Continue or a selected record by ID for
+History. Its question counter shares a row with a persisted checked/unchecked toggle.
 [`quiz-session.tsx`](../../src/features/quiz/quiz-session.tsx) owns app-wide history state, while
 [`session-storage.ts`](../../src/features/quiz/session-storage.ts) persists all records in AsyncStorage.
 New quizzes append records, navigation updates each record's position, and completion marks rather
-than clears the record.
+than clears the record. [`question-checks.tsx`](../../src/features/questions/question-checks.tsx)
+owns the checked-question set, and
+[`question-check-storage.ts`](../../src/features/questions/question-check-storage.ts) persists it
+separately in AsyncStorage.
 
 Gluestack-generated components and provider configuration live in `src/components/ui/`. Shared
-application controls live in `src/components/shared/`; the button, input, and checkbox controls are
-used by the study screens. Screens use component primitives with NativeWind `className` utility
+application controls live in `src/components/shared/`; the button, input, checkbox, and dropdown
+controls are used by the study screens. Screens use component primitives with NativeWind `className` utility
 classes, without styled components. The root Gluestack provider supplies the selected semantic
 palette as NativeWind variables on native platforms; route roots also set native flex sizing so
 pushed screens fill the stack. Input placeholder text uses the muted foreground palette. Material
@@ -69,7 +73,9 @@ The icon follows the selected page theme and switches to an error icon if clipbo
 
 ## Current feature boundary
 
-The catalog is local and read-only. Browse filters and answer-disclosure state are screen-local; quiz
-history persists locally, with answer disclosure resetting on each question change or resume. A
-valid legacy quiz snapshot migrates into history. Malformed stored records are discarded, and Continue
-is unavailable when history is empty.
+The catalog is local and read-only. Browse filters and answer-disclosure state are screen-local. Quiz
+history and checked-question status persist separately on the device; check keys combine the question
+category and prompt. Quiz setup can include all questions, only checked questions, or only unchecked
+questions after applying category selection. Answer disclosure resets on each question change or
+resume. A valid legacy quiz snapshot migrates into history. Malformed stored records are discarded,
+and Continue is unavailable when history is empty.

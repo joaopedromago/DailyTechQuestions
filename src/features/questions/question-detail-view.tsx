@@ -9,6 +9,7 @@ import {
   isJavascriptCodeQuestion,
   type Question,
 } from '@/data/questions';
+import { useQuestionChecks } from '@/features/questions/question-checks';
 
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from 'react';
@@ -81,8 +82,17 @@ export function QuestionDetailView({
   const effectiveColorScheme =
     webColorScheme === 'light' || webColorScheme === 'dark' ? webColorScheme : colorScheme;
   const questionActionIconColor = effectiveColorScheme === 'dark' ? '#ffffff' : '#000000';
+  const {
+    isHydrated: areQuestionChecksHydrated,
+    loadError: questionChecksLoadError,
+    persistenceError: questionChecksPersistenceError,
+    isQuestionChecked,
+    toggleQuestion,
+  } = useQuestionChecks();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const isCodeQuestion = isJavascriptCodeQuestion(question);
+  const questionIsChecked = isQuestionChecked(question);
+  const canToggleQuestionCheck = areQuestionChecksHydrated && !questionChecksLoadError;
   const [copyFailure, setCopyFailure] = useState<{ disclosureKey: string | number } | null>(null);
   const copyFailed = copyFailure !== null && Object.is(copyFailure.disclosureKey, disclosureKey);
 
@@ -153,7 +163,57 @@ export function QuestionDetailView({
               <ButtonText>{mode === 'browse' ? 'Return to list' : 'Return to menu'}</ButtonText>
             </Button>
             {positionLabel ? (
-              <Text className="text-sm text-muted-foreground">{positionLabel}</Text>
+              mode === 'quiz' ? (
+                <Box className="flex-row items-center justify-between gap-3">
+                  <Text className="flex-1 text-sm text-muted-foreground">{positionLabel}</Text>
+                  <Button
+                    accessibilityLabel={
+                      !areQuestionChecksHydrated
+                        ? 'Loading question check status'
+                        : questionChecksLoadError
+                          ? 'Question check status unavailable'
+                          : questionIsChecked
+                            ? 'Mark question unchecked'
+                            : 'Mark question checked'
+                    }
+                    accessibilityRole="checkbox"
+                    accessibilityState={
+                      canToggleQuestionCheck ? { checked: questionIsChecked } : { disabled: true }
+                    }
+                    className="shrink-0"
+                    isDisabled={!canToggleQuestionCheck}
+                    size="icon"
+                    testID="question-check-toggle"
+                    variant="ghost"
+                    onPress={() => toggleQuestion(question)}
+                  >
+                    <MaterialIcons
+                      accessible={false}
+                      color={questionActionIconColor}
+                      name={
+                        !areQuestionChecksHydrated
+                          ? 'hourglass-empty'
+                          : questionChecksLoadError
+                            ? 'error-outline'
+                            : questionIsChecked
+                              ? 'check-box'
+                              : 'check-box-outline-blank'
+                      }
+                      size={20}
+                      testID="question-check-icon"
+                    />
+                  </Button>
+                </Box>
+              ) : (
+                <Text className="text-sm text-muted-foreground">{positionLabel}</Text>
+              )
+            ) : null}
+            {mode === 'quiz' && questionChecksPersistenceError ? (
+              <Text accessibilityRole="alert" className="text-sm text-destructive">
+                {questionChecksLoadError
+                  ? 'Saved question check status could not be loaded.'
+                  : 'Question check status could not be saved.'}
+              </Text>
             ) : null}
             <Text className="text-sm font-medium text-muted-foreground">
               {getCategoryLabel(question.category)}
