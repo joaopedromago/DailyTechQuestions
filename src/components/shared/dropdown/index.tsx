@@ -28,7 +28,7 @@ export function Dropdown<Value extends string>({
   return (
     <Box className="gap-2">
       <Text className="font-semibold text-foreground">{label}</Text>
-      <Host style={{ width: '100%' }}>
+      <Host matchContents={{ vertical: true }} style={{ width: '100%' }}>
         <Picker
           enabled={!isDisabled}
           selectedValue={value}

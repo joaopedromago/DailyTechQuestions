@@ -36,11 +36,13 @@ separately in AsyncStorage.
 
 Gluestack-generated components and provider configuration live in `src/components/ui/`. Shared
 application controls live in `src/components/shared/`; the button, input, checkbox, and dropdown
-controls are used by the study screens. Screens use component primitives with NativeWind `className` utility
-classes, without styled components. The root Gluestack provider supplies the selected semantic
-palette as NativeWind variables on native platforms; route roots also set native flex sizing so
-pushed screens fill the stack. Input placeholder text uses the muted foreground palette. Material
-Icons come from `@react-native-vector-icons/material-icons`. NativeWind v5 is configured through
+controls are used by the study screens. The shared dropdown wraps Expo UI's Picker in a Host sized
+to its vertical content for native layout. Screens use component primitives with NativeWind
+`className` utility classes, without styled components. The root Gluestack provider supplies the
+selected semantic palette as NativeWind variables on native platforms; route roots also set native
+flex sizing so pushed screens fill the stack. Input placeholder text uses the muted foreground
+palette. Material Icons come from `@react-native-vector-icons/material-icons`. NativeWind v5 is
+configured through
 `metro.config.js`, `postcss.config.mjs`, and `src/global.css`; semantic tokens map the system light
 and dark palettes. The package is a NativeWind v5 release candidate and is being used with Expo
 SDK 58 / React Native 0.88, beyond the SDK 57 / React Native 0.86.3 target listed in its installation
