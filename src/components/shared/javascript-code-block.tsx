@@ -8,11 +8,10 @@ import { StyleSheet, Text, View, type TextStyle } from 'react-native';
 SyntaxHighlighter.registerLanguage('javascript', javascript);
 
 type ColorScheme = 'light' | 'dark' | null | undefined;
-type RendererProps = NonNullable<SyntaxHighlighterProps['renderer']> extends (
-  props: infer Props,
-) => unknown
-  ? Props
-  : never;
+type RendererProps =
+  NonNullable<SyntaxHighlighterProps['renderer']> extends (props: infer Props) => unknown
+    ? Props
+    : never;
 type RendererNode = RendererProps['rows'][number];
 type HighlightTheme = Record<string, CSSProperties>;
 

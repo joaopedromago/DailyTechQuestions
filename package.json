@@ -1,6 +1,6 @@
 {
   "name": "iwanttobereadyforinterview",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "main": "expo-router/entry",
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || ^26.0.0 || >=27.0.0"
@@ -81,6 +81,11 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|react-syntax-highlighter|refractor|hastscript|parse-entities|property-information|hast-util-parse-selector|comma-separated-tokens|space-separated-tokens|character-entities|character-entities-legacy|character-reference-invalid|decode-named-character-reference|is-alphabetical|is-alphanumerical|is-decimal|is-hexadecimal|is-whitespace-like|is-blank))",
+      "/node_modules/react-native-reanimated/plugin/",
+      "/node_modules/@react-native/babel-preset/"
+    ],
     "moduleNameMapper": {
       "^.+\\.css$": "<rootDir>/test/styleMock.js",
       "^@/assets/(.*)$": "<rootDir>/assets/$1",
