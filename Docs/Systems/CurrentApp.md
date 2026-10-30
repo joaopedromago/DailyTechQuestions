@@ -67,8 +67,10 @@ types the records and supplies display labels such as “Computer Science”, �
 Design”, and “JavaScript Code” without changing catalog values.
 
 For `JavascriptCode`, `question` stores a raw JavaScript snippet, including line breaks. The shared
-question detail view displays “What this code do?” above the snippet in a monospace block. These
-records have no reference URLs; their answers describe the Node.js output and why it occurs.
+question detail view displays “What this code do?” above a syntax-colored JavaScript block that
+follows the selected light or dark appearance and wraps long lines to the available width. Browse
+rows retain their one-line plain-text preview. These records have no reference URLs; their answers
+describe the Node.js output and why it occurs.
 The shared question detail view also has a copy icon beside the prompt. It copies the stored
 `question` value verbatim in browse and quiz modes, including the raw snippet for `JavascriptCode`.
 The icon follows the selected page theme and switches to an error icon if clipboard writing fails.

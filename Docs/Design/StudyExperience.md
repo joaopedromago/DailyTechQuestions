@@ -42,7 +42,9 @@ applying the question status filter and shuffling. No question appears more than
 catalog is never mutated.
 
 The shared question view displays the question first. For `JavascriptCode`, it displays the fixed
-prompt “What this code do?” and the raw `question` value in a monospace code block. **See answer**
+prompt “What this code do?” and the raw `question` value in a syntax-colored JavaScript code block.
+The block follows the selected light or dark appearance and wraps long lines to the available width;
+browse rows keep their one-line plain-text preview. **See answer**
 expands the answer panel and shows the question category and `shortAnswer`; the same control becomes
 **Hide answer** and collapses the quick and full answers. **See full answer** reveals `longAnswer`
 and clickable `referenceUrls` inside the expanded panel. JavaScript code questions have no

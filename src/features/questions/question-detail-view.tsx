@@ -2,6 +2,7 @@ import { ExternalLink } from '@/components/external-link';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/shared/button';
+import { JavaScriptCodeBlock } from '@/components/shared/javascript-code-block';
 import { Text } from '@/components/ui/text';
 import {
   getCategoryLabel,
@@ -254,11 +255,7 @@ export function QuestionDetailView({
               </Button>
             </Box>
             {isCodeQuestion ? (
-              <Box className="rounded-lg border border-border bg-card p-4">
-                <Text className="font-mono text-sm leading-5 text-foreground">
-                  {question.question}
-                </Text>
-              </Box>
+              <JavaScriptCodeBlock code={question.question} colorScheme={effectiveColorScheme} />
             ) : null}
           </Box>
 
