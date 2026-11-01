@@ -2,7 +2,7 @@
   {
     "question": "What is the difference between a shallow copy and a deep copy?",
     "shortAnswer": "A shallow copy duplicates only the outer container; nested object references are shared. A deep copy duplicates supported nested data so the copied graph is independent.",
-    "longAnswer": "A shallow copy duplicates only the outer container; nested object references are shared. A deep copy duplicates supported nested data so the copied graph is independent. To make the answer complete, cover these points: Explain that spread and Object.assign are shallow, show why nested mutation can affect both values, and mention the limits of structuredClone and JSON stringify/parse. Common pitfall: Do not call object spread a deep clone or assume one generic clone method preserves every value and behavior.",
+    "longAnswer": "Object spread and Object.assign create a new outer object but retain references to nested objects. For example, after copy = {...user}, changing copy.profile.name also changes user.profile.name. A deep copy recreates supported nested values, so that mutation is independent. structuredClone handles many built-in types and cycles, while JSON round-tripping loses values such as undefined and fails on cycles; neither preserves every custom behavior. Copy only the levels you intend to update when an immutable state change is enough.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy",
@@ -13,7 +13,7 @@
   {
     "question": "When would you use structuredClone instead of JSON stringify/parse?",
     "shortAnswer": "Use structuredClone when the values are within the structured clone algorithm's supported types and you need supported nested or circular data copied. JSON round-tripping is only suitable for JSON-safe data with no cycles or special values.",
-    "longAnswer": "Use structuredClone when the values are within the structured clone algorithm's supported types and you need supported nested or circular data copied. JSON round-tripping is only suitable for JSON-safe data with no cycles or special values. To make the answer complete, cover these points: State the limitations: functions and DOM nodes cannot be cloned, and custom object behavior or descriptors are not a universal preservation guarantee. Consider explicit mapping when domain semantics matter. Common pitfall: Do not use cloning as a substitute for validating untrusted data or designing an immutable state update.",
+    "longAnswer": "structuredClone can copy supported nested objects, Maps, Dates, and circular references; JSON stringify/parse cannot represent cycles and converts or drops some non-JSON values. For example, a Date becomes a string after a JSON round-trip, while structuredClone retains a Date. structuredClone still cannot clone functions or DOM nodes, and custom prototypes or descriptors are not generally preserved. Explicitly map domain objects when their behavior matters; cloning also does not validate untrusted input.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone",
@@ -23,7 +23,7 @@
   {
     "question": "What does Babel do in a React/TypeScript build?",
     "shortAnswer": "Babel parses and transforms source code using plugins and presets; it can transform JSX and modern JavaScript syntax for configured targets. With its TypeScript preset it strips type syntax but does not type-check.",
-    "longAnswer": "Babel parses and transforms source code using plugins and presets; it can transform JSX and modern JavaScript syntax for configured targets. With its TypeScript preset it strips type syntax but does not type-check. To make the answer complete, cover these points: Distinguish source transformation from bundling, type checking, and runtime polyfills, and explain that a framework or bundler may invoke Babel as part of its pipeline. Common pitfall: Do not say Babel runs TypeScript types in production or that syntax transformation automatically adds every missing browser API.",
+    "longAnswer": "Babel transforms source syntax through configured presets and plugins, such as JSX and newer JavaScript features. Its TypeScript preset removes type annotations so JavaScript can run, but it does not report type errors; run TypeScript's checker separately. A bundler may invoke Babel and then package modules, while polyfills supply missing runtime APIs when needed. For example, transforming an async function does not by itself guarantee that every target environment has a required browser API.",
     "category": "Typescript",
     "referenceUrls": [
       "https://babeljs.io/docs/",
@@ -34,7 +34,7 @@
   {
     "question": "What does Partial<T> mean, and what are its limitations?",
     "shortAnswer": "Partial<T> makes the top-level properties of T optional in the type system; it does not recursively transform nested properties or validate values at runtime.",
-    "longAnswer": "Partial<T> makes the top-level properties of T optional in the type system; it does not recursively transform nested properties or validate values at runtime. To make the answer complete, cover these points: For an update API, combine it with Pick or a dedicated patch type to expose only allowed fields, and define how omission, undefined, and null differ. Common pitfall: Do not assume Partial<T> means a valid or safe patch, or that it deep-clones or changes an object.",
+    "longAnswer": "Partial<T> marks each top-level property of T optional at compile time. For type User = {name: string; profile: {city: string}}, Partial<User> permits {name: 'Ada'} but does not permit {profile: {}} because city remains required. A patch endpoint often needs Pick<...> or a dedicated patch type so immutable or sensitive fields cannot be submitted. Decide whether an omitted field means unchanged, undefined is accepted, and null means clear; Partial supplies none of that runtime validation or behavior.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/utility-types.html"
@@ -43,7 +43,7 @@
   {
     "question": "How does Exclude<T, U> differ from Omit<T, K> and Extract<T, U>?",
     "shortAnswer": "Exclude removes matching members from a union; Extract keeps matching union members; Omit removes selected keys from an object type.",
-    "longAnswer": "Exclude removes matching members from a union; Extract keeps matching union members; Omit removes selected keys from an object type. To make the answer complete, cover these points: Use a small union example for Exclude/Extract and an object example for Omit; all are compile-time transformations. Common pitfall: Do not confuse the union-member filter Exclude with the object-key utility Omit.",
+    "longAnswer": "For type Mode = 'read' | 'write' | 'admin', Exclude<Mode, 'admin'> is 'read' | 'write', while Extract<Mode, 'admin' | 'write'> is 'write'. Omit<{id: number; name: string}, 'id'> produces an object type with only name. Exclude and Extract filter union members; Omit removes object properties. All three change static types, not runtime values.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/utility-types.html"
@@ -52,7 +52,7 @@
   {
     "question": "How do keyof T and T[K] help write a type-safe property helper?",
     "shortAnswer": "Constrain K with K extends keyof T; then T[K] expresses that the result type matches the chosen key's property type.",
-    "longAnswer": "Constrain K with K extends keyof T; then T[K] expresses that the result type matches the chosen key's property type. To make the answer complete, cover these points: Explain how a generic key constraint prevents invalid property names and preserves the input/output type relationship. Common pitfall: Do not widen the key to a plain string if the helper should accept only keys of T.",
+    "longAnswer": "A helper can be written as function get<T, K extends keyof T>(obj: T, key: K): T[K] { return obj[key]; }. For a user with name: string and age: number, get(user, 'age') is inferred as number and get(user, 'missing') is rejected. keyof T limits keys to known properties, and T[K] keeps the return type linked to the chosen key. Using a plain string loses that relationship and requires unsafe indexing or a broader return type.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/2/keyof-types.html",
@@ -62,7 +62,7 @@
   {
     "question": "How would you derive the awaited return type of an async function?",
     "shortAnswer": "Use Awaited<ReturnType<typeof fn>> to derive the function's return type and recursively unwrap Promise-like layers.",
-    "longAnswer": "Use Awaited<ReturnType<typeof fn>> to derive the function's return type and recursively unwrap Promise-like layers. To make the answer complete, cover these points: Mention that ReturnType works from a function type and that these utilities affect static checking only. Common pitfall: Do not confuse a Promise's type with the value available after await.",
+    "longAnswer": "If async function load() returns a Promise<User>, Awaited<ReturnType<typeof load>> is User. ReturnType extracts the function's declared return type, then Awaited unwraps Promise-like layers, including nested ones. This is useful when a consumer should track the function's result type without duplicating it. It only changes static checking: calling load() still returns a Promise that must be awaited.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/utility-types.html"
@@ -71,7 +71,7 @@
   {
     "question": "When should you use map instead of forEach?",
     "shortAnswer": "Use map when each input should produce a value in a new array; use forEach for a side effect where no transformed array is needed.",
-    "longAnswer": "Use map when each input should produce a value in a new array; use forEach for a side effect where no transformed array is needed. To make the answer complete, cover these points: Mention that map returns an array and callbacks should return the mapped value, while forEach returns undefined. Common pitfall: Do not call map and ignore its result just to loop over items.",
+    "longAnswer": "map transforms each element and returns a new array: [1, 2].map(n => n * 2) yields [2, 4]. forEach calls a function for each element and returns undefined, so it fits a side effect such as logging. map's callback needs to return the intended element; forgetting the return yields undefined entries. Using map only for side effects allocates an unused array and obscures intent.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map",
@@ -81,7 +81,7 @@
   {
     "question": "Why can mutating a shallow copy still mutate the original data?",
     "shortAnswer": "The outer object is new, but nested objects are still the same references, so mutating one through the copy is visible through the source.",
-    "longAnswer": "The outer object is new, but nested objects are still the same references, so mutating one through the copy is visible through the source. To make the answer complete, cover these points: Show a nested object example and explain how to copy every changed level for an immutable update. Common pitfall: Do not assume a new top-level object means all descendants were copied.",
+    "longAnswer": "With original = {profile: {name: 'Ada'}}, copy = {...original} creates a new outer object, but copy.profile === original.profile. Therefore copy.profile.name = 'Lin' changes both views. For an immutable update, copy the changed path: updated = {...original, profile: {...original.profile, name: 'Lin'}}. A new top-level reference alone does not isolate nested mutations.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy",
@@ -91,7 +91,7 @@
   {
     "question": "What is the difference between var, let, and const?",
     "shortAnswer": "var is function-scoped and can be redeclared; let and const are block-scoped and live in the temporal dead zone before initialization. const prevents rebinding, not mutation of an object it references.",
-    "longAnswer": "var is function-scoped and can be redeclared; let and const are block-scoped and live in the temporal dead zone before initialization. const prevents rebinding, not mutation of an object it references. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim that const makes an object deeply immutable or that a let binding is usable before its declaration.",
+    "longAnswer": "var is scoped to a function and permits redeclaration; let and const are block-scoped and cannot be used before initialization. Use const for a binding that will not be reassigned, such as const options = {retry: 2}; use let when the binding must change, such as a loop counter. const options still allows options.retry = 3 because it protects the binding, not the object. The trade-off is clarity and fewer accidental reassignments versus the need for a mutable binding where state genuinely changes.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let",
@@ -101,7 +101,7 @@
   {
     "question": "What is a closure, and where is it useful?",
     "shortAnswer": "A closure is a function together with access to lexical variables from the scope where it was created. It supports callbacks, private state, and function factories; captured values can also retain data longer than expected.",
-    "longAnswer": "A closure is a function together with access to lexical variables from the scope where it was created. It supports callbacks, private state, and function factories; captured values can also retain data longer than expected. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not describe closures as a snapshot of every outer variable; they preserve lexical access to bindings.",
+    "longAnswer": "A closure lets a function access bindings from the scope where it was created even after that outer call returns. For example, makeCounter can hold a private count and return a function that increments it on each call. This is useful for callbacks and encapsulated state, but a retained callback can also retain large objects longer than intended. The captured binding can change; a closure is not a frozen snapshot of every outer value.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures"
@@ -110,7 +110,7 @@
   {
     "question": "How does JavaScript choose the value of this?",
     "shortAnswer": "For ordinary functions, this is determined by how the function is called (or explicitly bound). Arrow functions capture this lexically and do not create their own this.",
-    "longAnswer": "For ordinary functions, this is determined by how the function is called (or explicitly bound). Arrow functions capture this lexically and do not create their own this. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume this always points to the object where a function was defined.",
+    "longAnswer": "For an ordinary function, this depends on the call: user.say() uses user, while a detached say() does not automatically retain user. bind can fix an ordinary function's receiver. An arrow function instead captures this from its surrounding scope, which is useful for a callback that should keep that receiver. The trade-off is that an arrow function cannot gain a new this from the object or event that later calls it.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this",
@@ -120,7 +120,7 @@
   {
     "question": "How do promises and the event loop affect async code order?",
     "shortAnswer": "Synchronous code runs on the current stack; promise reactions run as microtasks after that stack, while scheduled tasks such as timers run through task queues. Exact ordering across host APIs depends on the runtime.",
-    "longAnswer": "Synchronous code runs on the current stack; promise reactions run as microtasks after that stack, while scheduled tasks such as timers run through task queues. Exact ordering across host APIs depends on the runtime. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not say async makes CPU-heavy work parallel or that every timer has an exact execution time.",
+    "longAnswer": "Synchronous statements run first; after the current stack finishes, Promise reactions run as microtasks before a timer task in the usual event-loop turn. For example, logging A, scheduling Promise.resolve().then(() => log B), scheduling setTimeout(() => log C, 0), then logging D gives A, D, B, C in a typical browser or Node turn. The runtime can differ around other host APIs, and a timer has a minimum delay rather than an exact start time. Promises coordinate asynchronous work; CPU-heavy JavaScript still blocks the event loop unless moved elsewhere.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
@@ -130,7 +130,7 @@
   {
     "question": "How should errors from async functions be handled?",
     "shortAnswer": "An async function returns a Promise; use await inside try/catch when handling locally, or let the rejected Promise propagate to a caller that owns the failure policy. Avoid silently swallowing errors.",
-    "longAnswer": "An async function returns a Promise; use await inside try/catch when handling locally, or let the rejected Promise propagate to a caller that owns the failure policy. Avoid silently swallowing errors. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not leave rejected Promises unobserved or turn every error into a success-shaped fallback without logging and intent.",
+    "longAnswer": "An async function always returns a Promise, and thrown errors become rejections. Around an awaited API call, try/catch can translate a known failure into a useful response; otherwise let the rejection propagate to a caller or request boundary that owns error handling. For example, a failed payment should not be converted into a successful order response. Handle or return each Promise so rejections are observed, and log unexpected failures without exposing sensitive details.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function",
@@ -140,7 +140,7 @@
   {
     "question": "What is the difference between ES modules and CommonJS?",
     "shortAnswer": "ES modules use import/export with static module structure and are standardized by ECMAScript. CommonJS uses require/module.exports, historically common in Node. Interoperability and loading behavior depend on package and runtime configuration.",
-    "longAnswer": "ES modules use import/export with static module structure and are standardized by ECMAScript. CommonJS uses require/module.exports, historically common in Node. Interoperability and loading behavior depend on package and runtime configuration. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume the two module systems have identical resolution, loading, or top-level execution behavior.",
+    "longAnswer": "ES modules declare imports and exports statically, which helps tooling analyze dependencies and enables features such as tree shaking. CommonJS uses require and module.exports and remains common in older Node packages. For a new project, ESM often aligns with modern tooling, while an existing CommonJS service may keep it to avoid changing package and loader behavior. Their resolution and interoperability rules differ, so converting a file can require changes to package configuration and imports rather than a syntax-only replacement.",
     "category": "Javascript",
     "referenceUrls": [
       "https://nodejs.org/api/modules.html",
@@ -150,7 +150,7 @@
   {
     "question": "When would you use a TypeScript interface versus a type alias?",
     "shortAnswer": "Both can describe object shapes. Interfaces can be extended and declaration-merged; type aliases can express unions, intersections, primitives, tuples, and other type expressions. Choose for the contract and team conventions.",
-    "longAnswer": "Both can describe object shapes. Interfaces can be extended and declaration-merged; type aliases can express unions, intersections, primitives, tuples, and other type expressions. Choose for the contract and team conventions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim one is universally faster, safer, or always preferred.",
+    "longAnswer": "Both interface and type can describe an object contract. An interface can be extended and declaration-merged, which is useful for intentionally augmentable APIs; a type alias can name a union, tuple, primitive, intersection, or object expression. For example, type RequestState = Loading | Success | Error needs a type alias, while interface User { name: string } is a clear object contract. Declaration merging can help library augmentation but can also introduce surprising changes, so team conventions and intended extensibility matter more than a universal preference.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/2/objects.html",
@@ -160,7 +160,7 @@
   {
     "question": "Why prefer unknown to any for untrusted values?",
     "shortAnswer": "unknown accepts any input but requires narrowing before operations, so callers must prove what the value is. any disables many checks and can spread unsafe assumptions.",
-    "longAnswer": "unknown accepts any input but requires narrowing before operations, so callers must prove what the value is. any disables many checks and can spread unsafe assumptions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not cast an API response to a domain type merely to silence the compiler.",
+    "longAnswer": "unknown allows any value to enter a boundary but requires a check before it is used. For example, after JSON.parse or an API response, test that a value is an object with a string id before reading id as a string. any allows property access and assignment without proof, so an incorrect assumption can spread through the program. The extra narrowing work with unknown catches mistakes earlier; a cast to a domain type only silences the checker and does not validate the data.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any",
@@ -170,7 +170,7 @@
   {
     "question": "What problem do generics solve?",
     "shortAnswer": "Generics let an API relate input and output types while preserving useful information across different callers, such as function first<T>(items: T[]): T | undefined. Constraints can require only the capabilities an implementation needs.",
-    "longAnswer": "Generics let an API relate input and output types while preserving useful information across different callers, such as function first<T>(items: T[]): T | undefined. Constraints can require only the capabilities an implementation needs. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use a generic when a concrete type is clearer, or add unconstrained any inside a generic API.",
+    "longAnswer": "Generics express a relationship between types without fixing one concrete type. In function first<T>(items: T[]): T | undefined, a string array yields string | undefined and a number array yields number | undefined. A constraint such as T extends {id: string} permits code to use id while retaining the rest of the caller's type. This flexibility is valuable for reusable APIs, but a concrete type is simpler when there is only one valid domain shape.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/2/generics.html"
@@ -179,7 +179,7 @@
   {
     "question": "How do discriminated unions help model API or UI states?",
     "shortAnswer": "Give each variant a literal tag such as status: 'loading' | 'success' | 'error'; a switch narrows the fields available for that case and can support exhaustive checking.",
-    "longAnswer": "Give each variant a literal tag such as status: 'loading' | 'success' | 'error'; a switch narrows the fields available for that case and can support exhaustive checking. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not model mutually exclusive states as many independent booleans that permit impossible combinations.",
+    "longAnswer": "Define a state as {status: 'loading'} | {status: 'success'; data: User} | {status: 'error'; error: string}. A switch on status narrows each branch: the success UI can read data, the error UI can read error, and loading cannot accidentally read either. This prevents impossible combinations such as isLoading and hasError both being true with stale data. Adding a new variant can be caught with a never-based exhaustive check. The trade-off is more explicit branches and transitions, which pays off when states have different valid fields or behavior.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions"
@@ -188,7 +188,7 @@
   {
     "question": "Does TypeScript validate JSON at runtime?",
     "shortAnswer": "No. TypeScript types are erased from emitted JavaScript. Parse untrusted JSON as unknown, validate its shape at the boundary with explicit checks or a runtime schema library, then convert it to a trusted domain type.",
-    "longAnswer": "No. TypeScript types are erased from emitted JavaScript. Parse untrusted JSON as unknown, validate its shape at the boundary with explicit checks or a runtime schema library, then convert it to a trusted domain type. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume a compile-time type annotation validates network, database, environment, or user input.",
+    "longAnswer": "No. TypeScript annotations disappear from the emitted JavaScript, so a response typed as User can still contain malformed JSON at runtime. Parse or receive external data as unknown, check the required fields with a validator or runtime schema, then construct a trusted User. For example, a missing id must be rejected or handled before code assumes id is a string. Validation adds boundary code and runtime cost, but static types alone cannot protect network, storage, or user-input boundaries.",
     "category": "Typescript",
     "referenceUrls": [
       "https://github.com/microsoft/TypeScript/wiki/FAQ#what-is-type-erasure",
@@ -198,7 +198,7 @@
   {
     "question": "What are utility types such as Pick, Omit, and Partial for?",
     "shortAnswer": "They derive a type from another type, reducing duplication for related contracts. Use them when the relationship is meaningful, but define explicit input/output types when API semantics differ.",
-    "longAnswer": "They derive a type from another type, reducing duplication for related contracts. Use them when the relationship is meaningful, but define explicit input/output types when API semantics differ. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use Partial<T> as a substitute for a carefully designed patch contract; it may allow invalid combinations.",
+    "longAnswer": "Pick<T, K> selects properties, Omit<T, K> removes them, and Partial<T> makes top-level properties optional. For example, Pick<User, 'id' | 'name'> can type a compact view while Omit<User, 'passwordHash'> can express a related shape. These utilities reduce duplicated declarations when the contracts truly share meaning. A patch request usually needs an explicit allowlist and null/omission rules; Partial<User> can expose fields that should never be editable and cannot validate a request at runtime.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/utility-types.html"
@@ -207,7 +207,7 @@
   {
     "question": "What does structural typing mean in TypeScript?",
     "shortAnswer": "A value is generally assignable when it has the required compatible members, regardless of its declared name. This makes object contracts flexible; nominal-like distinctions can be modeled with branded types when needed.",
-    "longAnswer": "A value is generally assignable when it has the required compatible members, regardless of its declared name. This makes object contracts flexible; nominal-like distinctions can be modeled with branded types when needed. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat an interface declaration as a runtime class or security check.",
+    "longAnswer": "TypeScript compares required members rather than type names: a value with {id: string} can satisfy an interface requiring id even if it was declared under another name. That makes adapters and plain objects easy to compose. It also means structurally identical IDs from different domains can be mixed accidentally; a branded type can create a static distinction where needed. Interfaces do not create runtime checks, so external values still require validation.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
@@ -216,7 +216,7 @@
   {
     "question": "How do you make optional and nullable data safe?",
     "shortAnswer": "Enable strict checking, represent missing and null values deliberately, narrow before use, and make API contracts distinguish absent fields from explicit nulls where that matters.",
-    "longAnswer": "Enable strict checking, represent missing and null values deliberately, narrow before use, and make API contracts distinguish absent fields from explicit nulls where that matters. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use non-null assertions as a default fix for uncertain data.",
+    "longAnswer": "With strict null checking, name?: string may be absent and a field typed string | null may explicitly contain null. Check or narrow before use: if (user.name != null) safely handles both null and undefined before calling a string method. In an update API, omission can mean leave unchanged while null can mean clear the value, so define those semantics explicitly. Non-null assertions remove compiler warnings but do not prevent a runtime failure if the value is actually missing.",
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/tsconfig/#strictNullChecks",
@@ -226,7 +226,7 @@
   {
     "question": "What is prototype-based inheritance in JavaScript?",
     "shortAnswer": "Objects can delegate property lookup through a prototype chain. class syntax is a convenient abstraction over JavaScript's prototype-based object model, with its own rules for method definitions and super.",
-    "longAnswer": "Objects can delegate property lookup through a prototype chain. class syntax is a convenient abstraction over JavaScript's prototype-based object model, with its own rules for method definitions and super. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not claim JavaScript classes create a separate classical inheritance runtime model.",
+    "longAnswer": "When a property is missing on an object, JavaScript looks along its prototype chain. For example, an instance can use a method defined on its class prototype without copying that method into every instance. class provides syntax for constructors, methods, extends, and super on top of this model. Shared prototype methods save per-instance copies, while own properties can override inherited ones; changing a prototype affects lookup and should be done deliberately.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain",
@@ -236,7 +236,7 @@
   {
     "question": "How does tree shaking work, and how is it different from code splitting?",
     "shortAnswer": "Tree shaking removes code that the build determines is unused; code splitting separates code into chunks that can be loaded independently.",
-    "longAnswer": "Tree shaking removes code that the build determines is unused; code splitting separates code into chunks that can be loaded independently. To make the answer complete, cover these points: Explain why statically analyzable imports and exports help, how side-effect metadata affects what can be removed, and why tree shaking is commonly part of a production build. Common pitfall: Do not mark a package as side-effect-free if it imports CSS or runs required initialization code; check the production output and behavior.",
+    "longAnswer": "Tree shaking removes exports a build can prove are unused, usually using static ES module structure; code splitting creates separately loadable chunks. For example, an unused exported helper may disappear from a production bundle, while a lazy-loaded route becomes a later chunk. Tree shaking reduces bytes overall; splitting can reduce initial bytes but adds network and loading boundaries. Required side effects such as CSS imports or initialization must be declared accurately, or aggressive removal can break behavior.",
     "category": "Javascript",
     "referenceUrls": [
       "https://webpack.js.org/guides/tree-shaking/"
@@ -245,7 +245,7 @@
   {
     "question": "How does Map differ from WeakMap, and when would you choose each?",
     "shortAnswer": "Use Map when you need iterable key/value storage, any key type, or a count. Use WeakMap for object-associated data that should not keep the key alive.",
-    "longAnswer": "Use Map when you need iterable key/value storage, any key type, or a count. Use WeakMap for object-associated data that should not keep the key alive. To make the answer complete, cover these points: Compare key types, strong versus weak key references, iteration and size; give an example such as caching metadata for DOM nodes in a WeakMap. Common pitfall: Do not expect to enumerate a WeakMap, know its size, or rely on exactly when garbage collection removes an entry.",
+    "longAnswer": "Map accepts keys of any type, keeps strong references to object keys, and supports iteration and size. WeakMap accepts objects and non-registered symbols as keys, does not keep an object key alive solely because of the map, and is not iterable. For example, a WeakMap can attach cached metadata to DOM nodes without making the cache own their lifetime. Use Map when you need enumeration or a count; use WeakMap for private associations whose keys may be collected. Garbage collection timing is not observable through WeakMap.",
     "category": "Javascript",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
@@ -255,7 +255,7 @@
   {
     "question": "Explain useRef. How is it different from useState?",
     "shortAnswer": "useRef(initialValue) returns a stable object with a mutable current property. Changing it persists the value but does not trigger rendering; changing state schedules a render.",
-    "longAnswer": "useRef(initialValue) returns a stable object with a mutable current property. Changing it persists the value but does not trigger rendering; changing state schedules a render. To make the answer complete, cover these points: Give a use case that does not affect visible output, such as storing a timeout ID, and contrast it with a screen value that belongs in state. Common pitfall: Do not describe refs as a second state mechanism or expect React to update the UI when current changes.",
+    "longAnswer": "useRef returns a stable object whose current value can be changed without scheduling a render. A timeout ID or DOM node belongs in a ref because changing it does not itself alter the visible UI. A displayed count belongs in state: calling its setter schedules React to render the new value. Using a ref as displayed state can leave the screen stale, while state creates render work for changes the UI actually needs to show.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/useRef",
@@ -265,7 +265,7 @@
   {
     "question": "How do you use useRef to focus an input?",
     "shortAnswer": "Create the ref, attach it to the input with ref={inputRef}, then call inputRef.current?.focus() from an event handler or an Effect after the element has committed.",
-    "longAnswer": "Create the ref, attach it to the input with ref={inputRef}, then call inputRef.current?.focus() from an event handler or an Effect after the element has committed. To make the answer complete, cover these points: Explain that React assigns the DOM node to current and clears it when the node is removed; mention that direct DOM access is an escape hatch for imperative browser behavior. Common pitfall: Do not query the DOM during render or use a ref when ordinary state and props can express the UI.",
+    "longAnswer": "Create inputRef = useRef(null), pass ref={inputRef} to the input, and call inputRef.current?.focus() in an event handler or an Effect after the input is committed. React assigns the DOM node during commit and clears the ref when it is removed, so the optional call handles the absent-node case. This imperative access is appropriate for focus; data that determines what the UI displays should remain in props or state.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/manipulating-the-dom-with-refs"
@@ -274,7 +274,7 @@
   {
     "question": "Why should you avoid reading or writing ref.current during render?",
     "shortAnswer": "Render should stay pure and predictable. A mutable ref can change outside React's render cycle, so reading or changing it during render can make the output depend on hidden, unsynchronized state.",
-    "longAnswer": "Render should stay pure and predictable. A mutable ref can change outside React's render cycle, so reading or changing it during render can make the output depend on hidden, unsynchronized state. To make the answer complete, cover these points: Use an event handler or Effect for imperative work, and use state for data that determines the screen. Common pitfall: Do not mutate a ref during render to try to force React to observe a change.",
+    "longAnswer": "Rendering should calculate UI from props and state without changing hidden mutable data. A ref can change without a render, so reading ref.current to choose visible text can show stale output; writing it during render can make repeated renders produce different results. Read or update refs in handlers or Effects for imperative work, and use state for values the screen displays. A stable one-time lazy initialization is a narrow exception, not a way to drive UI updates.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/useRef#caveats",
@@ -284,7 +284,7 @@
   {
     "question": "How does a React update get from state change to DOM change?",
     "shortAnswer": "A state, prop, or consumed context update can make React call components again to calculate the next UI. React then reconciles the result and commits only the necessary host changes; a render does not guarantee a DOM mutation.",
-    "longAnswer": "A state, prop, or consumed context update can make React call components again to calculate the next UI. React then reconciles the result and commits only the necessary host changes; a render does not guarantee a DOM mutation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not say that every render recreates the whole DOM or that the Virtual DOM automatically makes an app fast.",
+    "longAnswer": "A state setter queues an update; React calls the affected component to compute the next element tree, compares it with the previous tree, and commits necessary host changes. For example, changing a search query may rerender a list component while leaving many DOM nodes unchanged if their output and identities are stable. Rendering has a cost even without a DOM mutation, so measure a slow path before optimizing it. React's reconciliation helps target updates but does not make expensive component work free.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/render-and-commit",
@@ -294,7 +294,7 @@
   {
     "question": "When should you use an Effect, an event handler, or a derived value?",
     "shortAnswer": "Use an Effect to synchronize with an external system after rendering. Put work caused by a specific user action in that event handler, and calculate values from existing props or state during render when possible.",
-    "longAnswer": "Use an Effect to synchronize with an external system after rendering. Put work caused by a specific user action in that event handler, and calculate values from existing props or state during render when possible. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use Effects to copy props into state, derive simple values, or handle a click that already has an event handler.",
+    "longAnswer": "Calculate a value from current props or state during render, such as filteredItems = items.filter(...), because it already has the needed inputs. Put a submit request in the submit handler because that specific action caused it. Use an Effect to synchronize with an external system, such as subscribing to a socket when a room ID changes, and clean it up on change or unmount. Effects add synchronization and dependency management, so using one merely to copy a derived value into state creates extra renders and stale-state risks.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/you-might-not-need-an-effect",
@@ -304,7 +304,7 @@
   {
     "question": "How do Effect cleanup and dependencies prevent stale work?",
     "shortAnswer": "List every reactive value the Effect reads. Clean up subscriptions, timers, and requests before the Effect re-synchronizes or the component unmounts; cancel or ignore obsolete asynchronous results so earlier requests cannot overwrite newer UI.",
-    "longAnswer": "List every reactive value the Effect reads. Clean up subscriptions, timers, and requests before the Effect re-synchronizes or the component unmounts; cancel or ignore obsolete asynchronous results so earlier requests cannot overwrite newer UI. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not silence dependency lint rules to force an Effect to run once; fix the dependency or move non-reactive logic out of the Effect.",
+    "longAnswer": "An Effect runs for its current dependencies and its cleanup runs before re-synchronizing or unmounting. For example, when roomId changes, unsubscribe from the old room and subscribe to the new one; for a fetch, abort or ignore the old response so it cannot overwrite newer results. Include every reactive value the Effect reads so it tracks the right room or query. Correct dependencies may cause more runs, but they prevent stale closures and leaked work; moving unrelated logic out is safer than suppressing the dependency rule.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/lifecycle-of-reactive-effects",
@@ -314,7 +314,7 @@
   {
     "question": "Why use a functional state updater?",
     "shortAnswer": "State is a snapshot for the current render. When the next value depends on the pending previous value, pass an updater such as setCount(current => current + 1) so queued updates compose correctly.",
-    "longAnswer": "State is a snapshot for the current render. When the next value depends on the pending previous value, pass an updater such as setCount(current => current + 1) so queued updates compose correctly. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not expect a state variable to change immediately after calling its setter in the same event handler.",
+    "longAnswer": "Each render sees a snapshot of state. If a handler calls setCount(count + 1) twice, both calls may use the same captured count; setCount(current => current + 1) twice applies each update to the pending value. Use a functional updater whenever the next state depends on the previous state, such as incrementing a retry count. For a replacement value independent of previous state, a direct setter is clearer. The local count variable still does not change immediately inside that handler.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/useState",
@@ -324,7 +324,7 @@
   {
     "question": "Why do list keys matter, and when can an index key cause a bug?",
     "shortAnswer": "A key lets React match an item with its prior identity as a list changes. Use a stable ID from the data so local state, focus, and DOM identity remain attached to the right item.",
-    "longAnswer": "A key lets React match an item with its prior identity as a list changes. Use a stable ID from the data so local state, focus, and DOM identity remain attached to the right item. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not use array indexes for lists that can reorder, insert, or delete items; do not generate random keys during render.",
+    "longAnswer": "Keys tell React which list item corresponds to a previous item. With stable item IDs, inserting a new row at the start keeps each existing row's local state and focus with the same data. Index keys instead shift identities, so an input's draft text can appear on a different row after a reorder. Stable IDs require data-level identity; generating random keys on every render discards that identity and remounts items unnecessarily.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/rendering-lists",
@@ -334,7 +334,7 @@
   {
     "question": "When would you choose local state, Context, an external store, or a query cache?",
     "shortAnswer": "Keep state near its owner; use Context or a client store for shared client state, and a query cache for remote server state with freshness and invalidation rules.",
-    "longAnswer": "Keep state near its owner; use Context or a client store for shared client state, and a query cache for remote server state with freshness and invalidation rules. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat Context, Redux, and query caches as interchangeable ways to store every value.",
+    "longAnswer": "Keep a form field in its form component when only that area uses it. Context can share low-frequency values such as a theme; an external client store helps coordinate widely shared, frequently updated client state. A query cache fits server data because it tracks fetching, freshness, deduplication, and invalidation. Broader shared state reduces prop passing but adds subscriptions and ownership complexity; putting server data in an ordinary global store can leave stale copies after mutations.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/learn/managing-state",
@@ -344,7 +344,7 @@
   {
     "question": "When do memo, useMemo, and useCallback help?",
     "shortAnswer": "They can skip repeated work or preserve identity when a measured render path benefits, such as a memoized child receiving a stable callback. Profile first and keep dependencies correct.",
-    "longAnswer": "They can skip repeated work or preserve identity when a measured render path benefits, such as a memoized child receiving a stable callback. Profile first and keep dependencies correct. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not add them everywhere or rely on cached values for correctness.",
+    "longAnswer": "memo can skip a child's render when props are unchanged; useMemo caches a calculation, and useCallback keeps a function identity stable for consumers that care. For example, a measured expensive list filter may benefit from useMemo when its inputs rarely change. Each cache adds dependency bookkeeping and comparison work, so it can cost more than recomputing cheap values. Profile the slow interaction and keep dependencies correct; memoization must not be required for correctness.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/memo",
@@ -355,7 +355,7 @@
   {
     "question": "How would you make a large clinician review queue fast without harming usability?",
     "shortAnswer": "Measure first; paginate or virtualize large result sets, debounce remote search, keep filters in clear state, cancel or ignore stale requests, and keep row identity stable. Preserve keyboard navigation, focus, screen-reader labels, and visible loading, empty, and error states.",
-    "longAnswer": "Measure first; paginate or virtualize large result sets, debounce remote search, keep filters in clear state, cancel or ignore stale requests, and keep row identity stable. Preserve keyboard navigation, focus, screen-reader labels, and visible loading, empty, and error states. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not virtualize a short list by default or optimize away accessible interactions.",
+    "longAnswer": "Start by measuring render, network, and interaction costs. For a queue with thousands of rows, paginate or virtualize the visible window, debounce server search, and ignore stale responses when filters change; stable row IDs preserve focus and local state. Virtualization cuts DOM work but complicates keyboard navigation and screen-reader context, so a small queue may be better as a normal list. Keep loading, empty, and error feedback visible while optimizing.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/Profiler",
@@ -366,7 +366,7 @@
   {
     "question": "What is the difference between Suspense and an Error Boundary?",
     "shortAnswer": "Suspense renders a fallback when a supported child is not ready. An Error Boundary provides UI for errors thrown while rendering descendants; it does not replace handling failures in event handlers or arbitrary async callbacks.",
-    "longAnswer": "Suspense renders a fallback when a supported child is not ready. An Error Boundary provides UI for errors thrown while rendering descendants; it does not replace handling failures in event handlers or arbitrary async callbacks. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat a Suspense fallback as an error handler or assume every data-fetching library suspends automatically.",
+    "longAnswer": "Suspense displays a fallback while a supported child is waiting, such as a lazy-loaded component or a framework-supported data source. An Error Boundary displays fallback UI when a descendant throws during rendering or supported lifecycle work. For example, a report route can show a loading skeleton while its code loads, then an error panel if rendering fails. A loading fallback does not handle errors, and event-handler or arbitrary async failures still need their own error handling; exact data-suspension behavior depends on the framework or library.",
     "category": "React",
     "referenceUrls": [
       "https://react.dev/reference/react/Suspense",
@@ -376,7 +376,7 @@
   {
     "question": "What changes when a React framework uses Server and Client Components?",
     "shortAnswer": "Server Components can render on the server without adding their component code to the client bundle. Client Components are needed for browser APIs, state, Effects, and event handlers; framework boundaries determine data flow and hydration.",
-    "longAnswer": "Server Components can render on the server without adding their component code to the client bundle. Client Components are needed for browser APIs, state, Effects, and event handlers; framework boundaries determine data flow and hydration. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume every component is a Client Component or send secrets and protected data into a client bundle.",
+    "longAnswer": "Server Components render on the server and can keep server-only code out of the client bundle; Client Components provide browser interaction, state, Effects, and event handlers. A product page can render static product data on the server and pass only the fields needed by an interactive cart button to a Client Component. This can reduce client JavaScript but introduces a serialization boundary and server/client composition constraints. Framework support determines the exact behavior, and private data must not be passed into client-visible props.",
     "category": "React",
     "referenceUrls": [
       "https://nextjs.org/docs/app/getting-started/server-and-client-components",
@@ -386,7 +386,7 @@
   {
     "question": "How would you test a clinician's approve/reject flow?",
     "shortAnswer": "Test what a clinician can observe: accessible controls, validation, pending and failure states, repeated clicks, and the resulting UI. Keep authorization and audit requirements enforced on the server too.",
-    "longAnswer": "Test what a clinician can observe: accessible controls, validation, pending and failure states, repeated clicks, and the resulting UI. Keep authorization and audit requirements enforced on the server too. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not test only implementation details or treat a disabled button as the security boundary.",
+    "longAnswer": "Test the flow through controls a clinician actually uses: select a case, approve or reject, observe pending feedback, and verify the final status. Include invalid input, request failure, and repeated clicks so a retry cannot create duplicate actions. UI tests catch broken interaction and accessibility, while server tests must separately prove authorization, durable state changes, and audit records. A disabled button improves the experience but cannot enforce permission or prevent a forged request.",
     "category": "React",
     "referenceUrls": [
       "https://testing-library.com/docs/react-testing-library/intro/",
@@ -396,7 +396,7 @@
   {
     "question": "How can Node.js serve many I/O requests while JavaScript runs on one main thread?",
     "shortAnswer": "The event loop runs JavaScript callbacks while the runtime and operating system handle asynchronous I/O; callbacks are scheduled when work completes. A long synchronous callback still blocks other JavaScript work on that event loop.",
-    "longAnswer": "The event loop runs JavaScript callbacks while the runtime and operating system handle asynchronous I/O; callbacks are scheduled when work completes. A long synchronous callback still blocks other JavaScript work on that event loop. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not equate non-blocking I/O with parallel JavaScript execution or assume every operation is handled identically by libuv.",
+    "longAnswer": "Node runs JavaScript callbacks on an event loop while the runtime and operating system handle supported asynchronous I/O. For example, while one database query waits for a response, Node can service another request; the completed query later schedules its callback. This supports many waiting requests with modest thread overhead, but a long synchronous JSON parse or computation blocks other callbacks on that event loop. Use workers or another process for measured CPU-heavy work rather than assuming async I/O makes JavaScript computation parallel.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop",
@@ -406,7 +406,7 @@
   {
     "question": "How would you handle CPU-heavy work in a Node service?",
     "shortAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation.",
-    "longAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not start an unbounded worker per request or use worker threads for routine network and database I/O.",
+    "longAnswer": "Measure the CPU cost and isolate work that materially blocks request handling. A worker thread can perform a bounded image transform while the event loop keeps serving requests; a queue or separate service fits longer jobs and operational isolation. Workers add transfer, memory, scheduling, and failure-management costs, so use a pool rather than starting one per request. Ordinary network and database I/O already have asynchronous paths and usually do not benefit from worker threads.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/api/worker_threads.html",
@@ -416,7 +416,7 @@
   {
     "question": "What is stream backpressure, and why does it matter?",
     "shortAnswer": "Streams let data flow incrementally. A writable stream's write() can signal that the producer should pause; waiting for capacity to drain keeps a fast producer from overwhelming memory or a slower destination.",
-    "longAnswer": "Streams let data flow incrementally. A writable stream's write() can signal that the producer should pause; waiting for capacity to drain keeps a fast producer from overwhelming memory or a slower destination. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not buffer an unbounded file or response entirely in memory when it can be streamed.",
+    "longAnswer": "Backpressure is the signal that a consumer cannot keep up with a producer. In a Node writable stream, write() returning false means the producer should pause until drain, while pipe or pipeline coordinates this flow for common cases. Streaming a large export uses bounded memory because chunks are not accumulated faster than the destination can accept them. The trade-off is more lifecycle and error handling than buffering a small payload, but ignoring backpressure can grow memory without bound.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/api/stream.html"
@@ -425,7 +425,7 @@
   {
     "question": "How should a Node HTTP service shut down on SIGTERM?",
     "shortAnswer": "Stop accepting new requests, mark readiness unhealthy, allow in-flight work a bounded time to finish, close database and queue clients, then force-close remaining resources at a deadline and exit with the right status.",
-    "longAnswer": "Stop accepting new requests, mark readiness unhealthy, allow in-flight work a bounded time to finish, close database and queue clients, then force-close remaining resources at a deadline and exit with the right status. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not call process.exit() immediately and discard active work or buffered logs.",
+    "longAnswer": "On SIGTERM, mark the instance unready and stop accepting new HTTP requests, then give active requests a bounded period to finish. Close queue consumers and database connections after work drains, with a deadline that force-closes remaining resources so shutdown cannot hang. For example, a rolling deployment can route new traffic elsewhere while a current request completes. A longer grace period reduces interrupted work but slows replacement; immediate process.exit can discard active responses and buffered logs.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/api/process.html#signal-events",
@@ -435,7 +435,7 @@
   {
     "question": "How do you handle asynchronous errors in a request handler?",
     "shortAnswer": "Make the framework boundary await the handler or explicitly forward rejections to centralized error middleware. Classify expected validation/auth/not-found errors separately from unexpected failures; log a safe correlation ID and return a stable response.",
-    "longAnswer": "Make the framework boundary await the handler or explicitly forward rejections to centralized error middleware. Classify expected validation/auth/not-found errors separately from unexpected failures; log a safe correlation ID and return a stable response. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not expose stack traces, tokens, or protected health data in error responses or logs.",
+    "longAnswer": "A request framework must await an async handler or forward its rejection into centralized error handling. Map expected validation or missing-resource errors to stable client responses, and log unexpected failures with a correlation ID while returning a generic server error. For example, a rejected database query should reach the error boundary rather than become an unhandled rejection. Centralization makes responses consistent, but handlers still need local recovery when they can meaningfully continue; never put stack traces or secrets in client responses.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/api/errors.html",
@@ -445,7 +445,7 @@
   {
     "question": "What should an API validate before applying a mutation?",
     "shortAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape.",
-    "longAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat client-side validation or a TypeScript type as server-side validation.",
+    "longAnswer": "Before changing data, authenticate the caller, authorize the specific resource and tenant, validate path, query, and body values, and enforce business invariants inside the transaction that writes the change. For example, an update to a patient record must verify both tenant membership and permission for that record before applying a validated status transition. Early validation saves work and gives clear errors, while transactional checks protect against concurrent changes. A client form or TypeScript type cannot enforce any of these checks on the server.",
     "category": "Backend",
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
@@ -455,7 +455,7 @@
   {
     "question": "How would you make a webhook receiver reliable?",
     "shortAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing.",
-    "longAnswer": "Verify the provider signature over the exact raw payload, enforce replay/timestamp checks when available, persist a provider event ID under a unique constraint, acknowledge quickly, and enqueue idempotent processing. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not trust a parsed body before signature verification or assume providers deliver every event exactly once and in order.",
+    "longAnswer": "Verify a webhook signature against the exact raw bytes and apply the provider's replay window when available. Store the provider event ID under a unique constraint, acknowledge promptly, and process through an idempotent job because the provider may retry or deliver out of order. For example, receiving the same payment event twice should update the order once. The durable queue and deduplication add storage and operational complexity, but doing slow business work before acknowledgment increases timeout-driven duplicate delivery.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.stripe.com/webhooks/signature",
@@ -465,7 +465,7 @@
   {
     "question": "How do retries, idempotency, and an outbox fit together?",
     "shortAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously.",
-    "longAnswer": "Use bounded exponential backoff with jitter for transient failures; use a stable idempotency key and stored result to prevent duplicate business effects. Commit an outbox row in the same database transaction as the business change, then publish it asynchronously. To make the answer complete, cover these points: Set a maximum attempt count or deadline, retry at one deliberate layer, treat repeated delivery as normal, and make the consumer idempotent. Common pitfall: Do not retry validation failures forever, reuse one key for different request intent, or assume a database commit and message publish are one atomic operation.",
+    "longAnswer": "Retry transient operations with a deadline or attempt cap and exponential backoff with jitter. Give one business action a stable idempotency key so a repeated request returns the prior result instead of charging twice. Write an outbox event in the same transaction as the business row, then publish it later; the consumer also deduplicates because publication can repeat. This improves recovery from partial failures but adds outbox storage and relay work. Validation failures are not retryable, and a database commit cannot atomically include an external broker publish without a separate protocol.",
     "category": "Backend",
     "referenceUrls": [
       "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
@@ -476,7 +476,7 @@
   {
     "question": "How do you isolate tenants in a multi-tenant service?",
     "shortAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes.",
-    "longAnswer": "Derive tenant identity from authenticated server-side context, enforce tenant scope in every repository operation and cache key, authorize roles within that scope, and consider database row-level security as defense in depth. Test cross-tenant reads and writes. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not accept an arbitrary tenant ID from the browser as proof of access or rely only on UI filtering.",
+    "longAnswer": "Take tenant identity from authenticated server context, then include it in every authorization check, database query, and cache key. For example, fetching document 42 should query by both document ID and the caller's tenant, not trust a tenant ID sent by the browser. Row-level security can add a database guard when configured correctly, while cross-tenant tests verify the boundary. Repeating tenant scope through layers adds discipline and review cost, but UI filtering alone cannot stop a direct API request.",
     "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
@@ -486,7 +486,7 @@
   {
     "question": "What should you inspect when a PostgreSQL query is slow?",
     "shortAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use.",
-    "longAnswer": "Inspect a representative EXPLAIN (ANALYZE, BUFFERS) plan: scans, joins, sorts, estimated versus actual rows, buffer reads, and index use. To make the answer complete, cover these points: Explain how an index should match measured filters, joins, ordering, and selectivity; check composite index order and the cost that indexes add to writes and storage. Common pitfall: Do not add indexes blindly or assume an index beats a sequential scan for a small table or a query that returns most rows.",
+    "longAnswer": "Capture a representative EXPLAIN (ANALYZE, BUFFERS) plan and compare estimated with actual rows, scans, joins, sorts, and buffer reads. If a selective tenant-and-created-at query repeatedly sorts a large result, a matching composite index may help; an index on a low-selectivity column may not. Indexes speed suitable reads but consume storage and slow inserts and updates, so measure with realistic data after adding one. A sequential scan can be the right plan for a small table or a query returning most rows.",
     "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/sql-explain.html",
@@ -496,7 +496,7 @@
   {
     "question": "How should a cache handle tenant-scoped data?",
     "shortAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes.",
-    "longAnswer": "Include the tenant and every relevant query or permission dimension in the cache key, define the allowed staleness, and invalidate or version entries after successful writes. To make the answer complete, cover these points: Describe cache-aside, TTLs, cache stampedes, invalidation races, and how permission changes or revocation affect cached results. Common pitfall: Do not share a cache entry across tenants because a resource ID looks unique, or assume TTL gives immediate consistency.",
+    "longAnswer": "In cache-aside, read a key scoped by tenant plus relevant query and permission dimensions; on a miss, fetch from the source and populate the cache. Set a TTL based on tolerated staleness and invalidate or version entries after writes, especially permission changes. For example, a revoked user's cached list must not remain accessible until a long TTL expires. Caching lowers read latency and source load but adds invalidation races and stampede risk; TTL alone does not give immediate consistency.",
     "category": "Backend",
     "referenceUrls": [
       "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
@@ -506,7 +506,7 @@
   {
     "question": "How would you design a background job for a patient nudge?",
     "shortAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending.",
-    "longAnswer": "Separate eligibility from delivery. Persist the decision, enqueue with a stable idempotency key, and have the worker recheck approval, consent, and cancellation before sending. To make the answer complete, cover these points: Assume at-least-once delivery: make processing idempotent, persist the result before acknowledging, bound retries, and move poison messages to a dead-letter queue. Common pitfall: Do not let a duplicate or delayed job bypass clinician approval, opt-out state, or a later cancellation.",
+    "longAnswer": "Persist an eligibility decision and enqueue a nudge with a stable business key. Before sending, the worker must recheck current clinician approval, consent, and cancellation so a delayed job cannot act on stale permission. Use the same idempotency key with the delivery provider when it supports one, and record the result before acknowledging the job. A crash after an external send but before recording it leaves an uncertain outcome; without provider idempotency, reconcile that outcome before retrying rather than promise duplicate-free delivery. Bound retries and move persistent failures to a dead-letter queue. These checks add work but keep delayed jobs from bypassing a later opt-out.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
@@ -517,7 +517,7 @@
   {
     "question": "What makes logs and traces useful without leaking sensitive data?",
     "shortAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs.",
-    "longAnswer": "Use structured events, request and job correlation IDs, latency/error metrics, and trace boundaries around external calls. Redact or omit PHI and secrets, restrict access, and define retention and audit needs. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not log full request bodies or tokens by default, especially for health data.",
+    "longAnswer": "Structured logs should record an operation name, correlation ID, outcome, and timing; traces should show spans around database and external calls. For example, a slow patient lookup can be diagnosed by its request ID and query duration without logging the patient's record. Omitting or redacting PHI and secrets reduces debugging detail, so choose safe identifiers and metrics that still locate failures. Access controls, retention rules, and audit logs should match the data's sensitivity; full bodies and tokens are unnecessary by default.",
     "category": "Backend",
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
@@ -527,7 +527,7 @@
   {
     "question": "How do you prevent one slow dependency from taking down the service?",
     "shortAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown.",
-    "longAnswer": "Set deadlines and timeouts, bound concurrency and queues, and use a circuit breaker when repeated dependency failures should fail fast. A half-open probe tests recovery after a cooldown. To make the answer complete, cover these points: Explain closed/open/half-open states, safe degraded behavior, monitoring, and why retries need caps and jitter so they do not amplify an outage. Common pitfall: Do not retry every failure at several layers or treat the breaker as a replacement for timeouts and idempotency.",
+    "longAnswer": "Set a timeout or deadline for each dependency call and bound concurrent requests and waiting queues. A circuit breaker stays closed while calls succeed, opens after sustained failures to fail fast, then allows limited half-open probes before closing again. For example, a recommendation service outage can return a documented degraded response instead of exhausting all web workers. Breakers and capped jittered retries improve isolation but can reject calls during recovery; monitor state and keep idempotency and timeouts in place.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html",
@@ -537,7 +537,7 @@
   {
     "question": "What do transaction isolation levels protect, and when would you use a stronger level?",
     "shortAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried.",
-    "longAnswer": "Isolation controls which concurrent changes a transaction can observe. Use the weakest level that preserves the required invariants; stronger isolation can prevent more anomalies but may abort transactions that must be retried. To make the answer complete, cover these points: Compare PostgreSQL Read Committed, Repeatable Read, and Serializable; mention constraints or row locks for specific invariants, short transaction scope, and retrying serialization failures. Common pitfall: Do not assume a transaction makes an external API call atomic with the database commit.",
+    "longAnswer": "Read Committed gives each PostgreSQL statement a fresh committed view; Repeatable Read keeps a transaction snapshot and may abort conflicting updates; Serializable also detects serialization anomalies and requires retrying aborted transactions. Use constraints or row locks for targeted invariants, and stronger isolation when a multi-row rule cannot otherwise be preserved. For example, two transactions checking the same capacity before inserting may need a serialized invariant. Stronger isolation simplifies reasoning about anomalies but increases aborts and contention; keep transactions short and do not assume an external API call joins the database commit.",
     "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/transaction-iso.html",
@@ -547,7 +547,7 @@
   {
     "question": "What does at-least-once delivery mean for a message consumer?",
     "shortAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order.",
-    "longAnswer": "A message is delivered one or more times, so a worker must expect duplicates; some standard queues may also deliver messages out of order. To make the answer complete, cover these points: Use a stable message ID or unique business key, make the side effect idempotent, persist success before acknowledging, and send repeatedly failing messages to a dead-letter queue. Common pitfall: Do not claim the queue guarantees exactly-once business effects just because it suppresses or deduplicates some messages.",
+    "longAnswer": "At-least-once delivery means a consumer may see the same message again after a crash or lost acknowledgment. Use a stable message or business key and a unique stored processing result so, for example, a duplicate charge event cannot apply a second credit. Commit the business effect and deduplication record before acknowledging, and send repeatedly failing messages to a dead-letter queue. This adds storage and retry handling, but queue-level duplicate suppression alone cannot guarantee exactly-once business effects or ordered arrival.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html",
@@ -557,7 +557,7 @@
   {
     "question": "How do read replicas affect read-after-write consistency?",
     "shortAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data.",
-    "longAnswer": "With asynchronous replication, a replica can lag behind the primary, so a read immediately after a successful write may return older data. To make the answer complete, cover these points: Route freshness-critical reads to the primary or use a database-specific mechanism to wait until a replica has applied the needed change; monitor lag and explain the scaling and availability trade-off. Common pitfall: Do not assume a successful primary commit is immediately visible on every replica.",
+    "longAnswer": "An asynchronously replicated read replica may trail the primary after a successful commit. For example, a user who updates a profile and immediately reads from a replica may see the old name. Route freshness-critical reads to the primary, or use a database-specific wait until the replica reaches the needed log position; monitor lag. Replicas spread read load and can improve availability, but primary reads or waiting reduce that scaling benefit and may increase latency.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html",
@@ -567,7 +567,7 @@
   {
     "question": "What creates a hot partition, and how would you address it?",
     "shortAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused.",
-    "longAnswer": "A hot partition occurs when a skewed key or access pattern sends too many reads or writes to one partition while other partitions are underused. To make the answer complete, cover these points: Inspect hot keys and workload distribution, then redesign for higher-cardinality distribution; for a proven single-key hotspot, consider write sharding and the read fan-out it requires. Common pitfall: Do not add shards without accounting for query aggregation, cross-shard updates, and migration complexity.",
+    "longAnswer": "A partition becomes hot when many operations target one key or range, such as all writes going to the current day's partition while older partitions sit idle. Measure per-partition traffic and hot keys before changing the scheme. A higher-cardinality key or write sharding can distribute a true single-key hotspot, but reading that logical key then needs fan-out and aggregation. More partitions also complicate cross-partition updates and migration, so address the measured skew rather than adding shards blindly.",
     "category": "Backend",
     "referenceUrls": [
       "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-uniform-load.html",
@@ -577,7 +577,7 @@
   {
     "question": "When would you use optimistic versus pessimistic concurrency control?",
     "shortAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized.",
-    "longAnswer": "Use optimistic control when conflicts are uncommon and can be detected with a version check; use pessimistic locking when competing updates are likely and must be serialized. To make the answer complete, cover these points: Explain conditional updates or version columns versus row locks, how conflicts are returned or retried, and the blocking/deadlock costs of locks. Common pitfall: Do not silently overwrite a concurrent update or hold a row lock while waiting on a network call.",
+    "longAnswer": "Optimistic control reads a version and updates only if that version is unchanged; a failed conditional update reports or retries a conflict. It suits rare collisions, such as edits to independent profile records. Pessimistic control locks a row in a transaction so competing updates wait, which suits a contended balance or inventory invariant. Locks simplify serialization but add waiting and deadlock risk; optimistic retries waste work under heavy contention. Keep locked transactions short and never wait on a network call while holding a row lock.",
     "category": "Backend",
     "referenceUrls": [
       "https://www.postgresql.org/docs/current/explicit-locking.html",
@@ -587,7 +587,7 @@
   {
     "question": "How do you use a coding assistant without giving up engineering ownership?",
     "shortAnswer": "Give it a bounded task and repository context, inspect its plan and diff, verify assumptions against source code and documentation, run the right checks, and own the final design and explanation.",
-    "longAnswer": "Give it a bounded task and repository context, inspect its plan and diff, verify assumptions against source code and documentation, run the right checks, and own the final design and explanation. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not treat a fluent answer, generated test, or AI review as proof that the change is correct.",
+    "longAnswer": "Give a coding assistant a bounded task with relevant repository rules, then inspect its proposed changes against the actual code and documentation. For example, for a form validation fix, verify the boundary behavior, run relevant tests and type checks, and review the diff before merging. It can speed up search and drafting, but fluent output and generated tests can share the same mistaken assumption. The engineer remains responsible for design choices, security, and the final explanation.",
     "category": "AI",
     "referenceUrls": [
       "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide",
@@ -597,7 +597,7 @@
   {
     "question": "What belongs in a useful prompt for a code change?",
     "shortAnswer": "State the desired outcome, relevant context, constraints and non-goals, likely files or interfaces, acceptance criteria, and how to report uncertainty. Ask for investigation before a risky implementation when requirements are unclear.",
-    "longAnswer": "State the desired outcome, relevant context, constraints and non-goals, likely files or interfaces, acceptance criteria, and how to report uncertainty. Ask for investigation before a risky implementation when requirements are unclear. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not paste secrets or unnecessary private data, and do not ask a vague multi-part prompt that hides acceptance criteria.",
+    "longAnswer": "A useful prompt identifies the outcome, current behavior, constraints, relevant files or interfaces, and acceptance checks. For example: 'Reject duplicate webhook event IDs, preserve the existing response shape, add a retry test, and report any migration needed.' This focuses investigation and makes the result reviewable, while a very narrow prompt can hide a missing requirement; state uncertainty where the assistant should investigate. Include only the context needed and omit secrets or unnecessary private data.",
     "category": "AI",
     "referenceUrls": [
       "https://developers.openai.com/api/docs/guides/code-generation",
@@ -607,7 +607,7 @@
   {
     "question": "When is autocomplete enough, and when is an agent workflow useful?",
     "shortAnswer": "Use autocomplete for a small local edit; use an agent for a bounded task that benefits from repository search, multiple edits, and verification. Grant only the tools and access required, and review actions that affect files, commands, or external systems.",
-    "longAnswer": "Use autocomplete for a small local edit; use an agent for a bounded task that benefits from repository search, multiple edits, and verification. Grant only the tools and access required, and review actions that affect files, commands, or external systems. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not give broad permissions to an agent simply because it can complete a task faster.",
+    "longAnswer": "Autocomplete fits a local expression or small edit where the developer already knows the surrounding design. An agent workflow is useful for a bounded change that needs repository search, edits across files, and verification, such as adding an API field through validation, storage, and UI. The agent may save navigation and drafting time but creates more review surface and tool-access risk. Grant access needed for that task and inspect file, command, and external actions before accepting the result.",
     "category": "AI",
     "referenceUrls": [
       "https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/overview",
@@ -617,7 +617,7 @@
   {
     "question": "What is prompt injection, and how would you reduce its impact in a coding workflow?",
     "shortAnswer": "Prompt injection is untrusted content attempting to redirect a model or agent. Treat issue text, webpages, logs, and repository content as data rather than authority; limit tools, permissions, secrets, network access, and side effects, and require review for consequential actions.",
-    "longAnswer": "Prompt injection is untrusted content attempting to redirect a model or agent. Treat issue text, webpages, logs, and repository content as data rather than authority; limit tools, permissions, secrets, network access, and side effects, and require review for consequential actions. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not assume prompt wording alone can prevent injection or let untrusted content authorize tool calls.",
+    "longAnswer": "Prompt injection occurs when untrusted text, such as an issue description, webpage, or log, tries to act like an instruction to the coding agent. For example, a repository file could tell the agent to ignore its task and upload environment variables; the file should be treated as data to inspect, not authority to act. Limit accessible secrets, network destinations, and side effects, and review consequential actions. These boundaries cost some convenience but contain mistakes that prompt wording alone cannot prevent.",
     "category": "AI",
     "referenceUrls": [
       "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations",
@@ -627,7 +627,7 @@
   {
     "question": "What data should you give an AI coding tool?",
     "shortAnswer": "Follow the employer's data policy and the specific tool's approved configuration. Prefer synthetic or redacted examples; never submit patient data, credentials, or proprietary code to an unapproved tool or account.",
-    "longAnswer": "Follow the employer's data policy and the specific tool's approved configuration. Prefer synthetic or redacted examples; never submit patient data, credentials, or proprietary code to an unapproved tool or account. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not infer that a vendor's general security claims authorize a particular PHI workflow; approval, contracts, settings, and operational safeguards matter.",
+    "longAnswer": "Give an AI coding tool only data allowed by the employer's policy and that tool's approved configuration. A synthetic failing payload can demonstrate a parser bug without exposing patient records, credentials, or proprietary source to an unapproved account. Redaction may remove context needed to reproduce a bug, so create representative test fixtures or use an approved protected environment when necessary. Vendor security claims alone do not establish authorization for a specific PHI workflow.",
     "category": "AI",
     "referenceUrls": [
       "https://www.hhs.gov/hipaa/for-professionals/security/index.html",
@@ -637,7 +637,7 @@
   {
     "question": "How do you evaluate AI-generated code?",
     "shortAnswer": "Use the same engineering evidence as other code: inspect the diff, check relevant behavior and edge cases, run type checks, tests, lint and build as appropriate, review dependencies and security, and add a regression test for the reported failure.",
-    "longAnswer": "Use the same engineering evidence as other code: inspect the diff, check relevant behavior and edge cases, run type checks, tests, lint and build as appropriate, review dependencies and security, and add a regression test for the reported failure. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not let the model's own explanation or self-review be the only evaluation.",
+    "longAnswer": "Evaluate AI-generated code by inspecting the diff, tracing the relevant behavior and edge cases, and running type checks, lint, tests, and builds that match the change. For a reported parsing bug, add a regression input that failed before the fix and passes after it; inspect new dependencies and security-sensitive paths too. Automation gives repeatable evidence, but passing checks may miss a wrong requirement or an untested integration. The model's explanation or self-review is a hypothesis, not independent proof.",
     "category": "AI",
     "referenceUrls": [
       "https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/risks-and-mitigations",
@@ -647,7 +647,7 @@
   {
     "question": "How would you compare two AI developer tools for a team?",
     "shortAnswer": "Use representative, non-sensitive tasks and a rubric for correctness, maintainability, test quality, review effort, security, latency, cost, IDE/repository fit, and data controls. Keep humans responsible for acceptance and compare on more than one task.",
-    "longAnswer": "Use representative, non-sensitive tasks and a rubric for correctness, maintainability, test quality, review effort, security, latency, cost, IDE/repository fit, and data controls. Keep humans responsible for acceptance and compare on more than one task. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not choose only from a polished demo or one successful prompt; tool capabilities and policies change over time.",
+    "longAnswer": "Compare tools on several representative, non-sensitive team tasks using the same rubric: correctness, maintainability, test quality, review time, security and data controls, latency, cost, and repository fit. For example, measure whether each tool can make a small cross-file change and how much human repair it needs, not just whether it produces code quickly. A broader evaluation costs time but avoids choosing from a polished demo or one lucky prompt. Recheck pricing, capabilities, and policies before procurement because they change.",
     "category": "AI",
     "referenceUrls": [
       "https://developers.openai.com/api/docs/guides/code-generation",
@@ -657,7 +657,7 @@
   {
     "question": "How should an AI suggestion enter a health-product workflow?",
     "shortAnswer": "Treat model output as an untrusted draft. Apply deterministic eligibility and safety rules, validate provenance and freshness, require clinician review where intended, and create an audit trail before any patient-facing action.",
-    "longAnswer": "Treat model output as an untrusted draft. Apply deterministic eligibility and safety rules, validate provenance and freshness, require clinician review where intended, and create an audit trail before any patient-facing action. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not let generated text independently determine clinical eligibility, bypass human approval, or silently trigger a send.",
+    "longAnswer": "Treat an AI suggestion as a draft that enters a controlled workflow. For a patient nudge, deterministic rules should check eligibility and consent, provenance and freshness should be visible, a clinician should approve where required, and the eventual send should be audited. This adds review latency but prevents generated text from independently deciding clinical eligibility or triggering patient-facing actions. Recheck approval and opt-out state at delivery because they may change after the draft was created.",
     "category": "AI",
     "referenceUrls": [
       "https://www.hhs.gov/hipaa/for-professionals/security/index.html",
@@ -667,7 +667,7 @@
   {
     "question": "How would you describe an AI-assisted engineering example in an interview?",
     "shortAnswer": "Explain the problem, why you used a tool, the context and constraints you provided, what it proposed, what you changed or rejected, how you verified the result, and the outcome you can support with evidence.",
-    "longAnswer": "Explain the problem, why you used a tool, the context and constraints you provided, what it proposed, what you changed or rejected, how you verified the result, and the outcome you can support with evidence. To make the answer complete, cover these points: Explain the trade-off and connect it to a concrete example from your work. Common pitfall: Do not overstate AI's contribution or claim productivity gains you cannot substantiate.",
+    "longAnswer": "Describe a real case with the problem, why an AI tool was useful, the context supplied, the proposal it produced, what you changed or rejected, and how you verified the outcome. For example, an assistant might draft a parser change while you add the missing malformed-input case and confirm the build and regression test. The trade-off is faster exploration versus time spent checking plausible mistakes. Report only measured results and your actual contribution, rather than claiming unsupported productivity gains.",
     "category": "AI",
     "referenceUrls": [
       "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide",
