@@ -99,6 +99,15 @@
     ]
   },
   {
+    "question": "How do ==, ===, and Object.is compare values in JavaScript?",
+    "shortAnswer": "== can coerce different types; === compares without coercion; Object.is also distinguishes +0 from -0 and considers NaN equal to itself.",
+    "longAnswer": "For example, 0 == '0' is true while 0 === '0' is false. Both == and === treat NaN as unequal to itself and +0 as equal to -0; Object.is(NaN, NaN) is true and Object.is(+0, -0) is false. Distinct object instances are unequal under all three, even if their properties match. Prefer === for ordinary comparisons and use Object.is when its special numeric behavior matters.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Equality_comparisons_and_sameness"
+    ]
+  },
+  {
     "question": "What is a closure, and where is it useful?",
     "shortAnswer": "A closure is a function together with access to lexical variables from the scope where it was created. It supports callbacks, private state, and function factories; captured values can also retain data longer than expected.",
     "longAnswer": "A closure lets a function access bindings from the scope where it was created even after that outer call returns. For example, makeCounter can hold a private count and return a function that increments it on each call. This is useful for callbacks and encapsulated state, but a retained callback can also retain large objects longer than intended. The captured binding can change; a closure is not a frozen snapshot of every outer value.",
@@ -125,6 +134,16 @@
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
       "https://tc39.es/ecma262/"
+    ]
+  },
+  {
+    "question": "When should you use Promise.all versus Promise.allSettled?",
+    "shortAnswer": "Use Promise.all when every result is required; use Promise.allSettled when you need each operation's success or failure even if some reject.",
+    "longAnswer": "Both start observing the supplied promises concurrently and return results in input order. Promise.all fulfills with all values or rejects as soon as one input rejects, but it does not cancel the other operations. Promise.allSettled waits for every input and returns a fulfilled or rejected outcome for each, which suits independent batch work such as loading several optional widgets. Choose based on whether one failure should fail the whole combined result.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled"
     ]
   },
   {
@@ -211,6 +230,15 @@
     "category": "Typescript",
     "referenceUrls": [
       "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+    ]
+  },
+  {
+    "question": "What does the satisfies operator do compared with a type annotation?",
+    "shortAnswer": "satisfies checks that an expression fits a type while retaining the expression's inferred type; an annotation gives the variable the declared type.",
+    "longAnswer": "For example, an object can satisfy Record<'red' | 'green', string | number[]> while its green property remains known as a string, so string methods remain available. An annotation with that Record type makes access to green appear to be string | number[] and requires narrowing. The operator catches missing or misspelled keys in an object literal, but it only checks types at compile time and does not validate runtime input.",
+    "category": "Typescript",
+    "referenceUrls": [
+      "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator"
     ]
   },
   {
@@ -332,6 +360,16 @@
     ]
   },
   {
+    "question": "What is the difference between a controlled and uncontrolled form input?",
+    "shortAnswer": "A controlled input gets its current value from React state and updates it through a change handler; an uncontrolled input keeps its current value in the DOM.",
+    "longAnswer": "A controlled text input uses value plus onChange so React state is the source of truth, which helps with live validation and synchronizing fields. An uncontrolled text input can use defaultValue for its initial value and let the DOM hold later edits until the form is submitted or a ref reads them. Choose based on who needs to own each value; avoid switching the same input between controlled and uncontrolled during its lifetime.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react-dom/components/input",
+      "https://react.dev/learn/sharing-state-between-components"
+    ]
+  },
+  {
     "question": "When would you choose local state, Context, an external store, or a query cache?",
     "shortAnswer": "Keep state near its owner; use Context or a client store for shared client state, and a query cache for remote server state with freshness and invalidation rules.",
     "longAnswer": "Keep a form field in its form component when only that area uses it. Context can share low-frequency values such as a theme; an external client store helps coordinate widely shared, frequently updated client state. A query cache fits server data because it tracks fetching, freshness, deduplication, and invalidation. Broader shared state reduces prop passing but adds subscriptions and ownership complexity; putting server data in an ordinary global store can leave stale copies after mutations.",
@@ -339,6 +377,15 @@
     "referenceUrls": [
       "https://react.dev/learn/managing-state",
       "https://tanstack.com/query/latest/docs/framework/react/overview"
+    ]
+  },
+  {
+    "question": "When would you use useReducer instead of useState?",
+    "shortAnswer": "Use useState for simple updates; use useReducer when several actions change related state and the transition logic is easier to keep in one pure function.",
+    "longAnswer": "A reducer receives the current state and an action, then returns the next state. For a form with add, edit, reset, and submit transitions, centralizing those cases can make invariants and debugging clearer than several scattered setters. useReducer adds action definitions and reducer code, so a single independent toggle or input usually remains simpler with useState. A reducer can also be tested separately because it is a pure function.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/learn/extracting-state-logic-into-a-reducer"
     ]
   },
   {
@@ -404,6 +451,16 @@
     ]
   },
   {
+    "question": "How do process.nextTick, setImmediate, and setTimeout differ in Node.js?",
+    "shortAnswer": "process.nextTick runs after the current stack before the loop continues; setImmediate runs in the check phase after polling; setTimeout runs after a minimum timer threshold.",
+    "longAnswer": "process.nextTick drains its own queue before the event loop advances, so recursive scheduling can starve I/O; current Node documentation marks it legacy and recommends queueMicrotask for most new uses. setImmediate callbacks run in the check phase after poll, while setTimeout callbacks become eligible only after their delay and may run later under load. At top level, the relative order of setImmediate and setTimeout with a zero delay is not guaranteed; inside an I/O callback, setImmediate normally runs first.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick",
+      "https://nodejs.org/api/process.html#processnexttickcallback-args"
+    ]
+  },
+  {
     "question": "How would you handle CPU-heavy work in a Node service?",
     "shortAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation.",
     "longAnswer": "Measure the CPU cost and isolate work that materially blocks request handling. A worker thread can perform a bounded image transform while the event loop keeps serving requests; a queue or separate service fits longer jobs and operational isolation. Workers add transfer, memory, scheduling, and failure-management costs, so use a pool rather than starting one per request. Ordinary network and database I/O already have asynchronous paths and usually do not benefit from worker threads.",
@@ -449,6 +506,15 @@
     "category": "Backend",
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "How do authentication and authorization differ in an API?",
+    "shortAnswer": "Authentication verifies who the caller is; authorization checks whether that caller may perform a particular action on a particular resource.",
+    "longAnswer": "A valid login or token establishes an identity, but that user may still lack permission to read another user's record or change an admin setting. The server must evaluate authorization for each protected request and the specific target resource, including tenant boundaries. Authentication and authorization decisions can be handled by different layers, but the API must not trust a client-side permission check as the final authority.",
+    "category": "Backend",
+    "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
     ]
   },
@@ -501,6 +567,16 @@
     "referenceUrls": [
       "https://redis.io/docs/latest/develop/use-cases/cache-aside/",
       "https://tanstack.com/query/latest/docs/framework/react/guides/query-keys"
+    ]
+  },
+  {
+    "question": "What trade-offs does adding a database index introduce?",
+    "shortAnswer": "An index can speed matching reads and ordered queries, but consumes storage and adds work to inserts, updates, and deletes.",
+    "longAnswer": "An index on a frequently filtered key can help the database find relevant rows without scanning the whole table. Its benefit depends on query predicates, selectivity, ordering, and the query plan; a low-value index may never be chosen. Every write that affects indexed data also maintains the index, and many indexes increase storage and maintenance cost. Inspect real queries and execution plans before adding one, then measure whether the read benefit justifies the write cost.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://www.postgresql.org/docs/current/indexes-intro.html",
+      "https://www.postgresql.org/docs/current/using-explain.html"
     ]
   },
   {
@@ -967,12 +1043,30 @@
     ]
   },
   {
+    "question": "How does union-find help solve connectivity problems?",
+    "shortAnswer": "Union-find tracks disjoint sets with find and union operations, making repeated connectivity checks efficient as edges are added.",
+    "longAnswer": "Initially each item is its own set. find returns a representative for an item's set, and union merges two sets; two items are connected when their representatives match. This suits incremental undirected connectivity and Kruskal's minimum spanning tree algorithm. Weighted union with path compression makes operations very cheap amortized, but basic union-find does not support edge deletion or provide the actual path between items.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/15uf/"
+    ]
+  },
+  {
     "question": "How do breadth-first search and depth-first search differ?",
     "shortAnswer": "BFS explores by distance layers and finds a shortest path in an unweighted graph; DFS follows a path deeply before backtracking.",
     "longAnswer": "BFS explores by distance layers and finds a shortest path in an unweighted graph; DFS follows a path deeply before backtracking. With adjacency lists, both take O(V + E) time. In a spoken answer, state assumptions, work through a small example, and explain the relevant trade-offs.",
     "category": "ComputerScience",
     "referenceUrls": [
       "https://algs4.cs.princeton.edu/cheatsheet/"
+    ]
+  },
+  {
+    "question": "What is topological sorting, and when is it possible?",
+    "shortAnswer": "It orders vertices so every directed edge goes from earlier to later; such an order exists exactly when the directed graph has no cycle.",
+    "longAnswer": "Model a prerequisite as an edge from the required task to the dependent task. A topological order then gives a valid execution sequence, such as the order for compiling modules or taking courses. A directed cycle makes any such sequence impossible. DFS reverse postorder or an indegree-based queue can produce an order in O(V + E) time with adjacency lists; multiple valid orders may exist.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://algs4.cs.princeton.edu/42digraph/"
     ]
   },
   {
@@ -991,6 +1085,16 @@
     "category": "ComputerScience",
     "referenceUrls": [
       "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/problem-solving-notes/"
+    ]
+  },
+  {
+    "question": "How do you recognize and solve a dynamic programming problem?",
+    "shortAnswer": "Look for repeated subproblems and a recurrence that builds the answer from smaller answers; store each subproblem result with memoization or tabulation.",
+    "longAnswer": "Define a state that captures everything needed for a subproblem, write its recurrence and base cases, then compute each state once. In coin change, a state can be the minimum coins needed for an amount; smaller amounts feed larger ones. Top-down memoization follows recursive calls and caches results, while bottom-up tabulation fills states in dependency order. Check that the state and recurrence cover all choices, then estimate time as number of states times work per state.",
+    "category": "ComputerScience",
+    "referenceUrls": [
+      "https://ocw.mit.edu/courses/6-s095-programming-for-the-puzzled-january-iap-2018/8706beaa535711f0af45ce2e86f3c9c2_MIT6_S095IAP18_Puzzle_11.pdf",
+      "https://cp-algorithms.com/dynamic_programming/intro-to-dp.html"
     ]
   },
   {
@@ -1143,12 +1247,31 @@
     ]
   },
   {
+    "question": "Design a service for uploading and serving large user files.",
+    "shortAnswer": "Authorize an upload, issue a scoped temporary upload URL, store bytes in object storage and metadata separately, and serve downloads through authorized or temporary URLs.",
+    "longAnswer": "Clarify file sizes, privacy, retention, and download traffic first. After authenticating and authorizing the user, create a unique object key and a short-lived upload grant; let the client send bytes directly to object storage while the API stores ownership and status metadata. For large or unreliable uploads, use multipart parts so failed parts can be retried without restarting the whole file. Verify completion and checksums before marking a file available, enforce access checks for downloads, and clean up abandoned uploads. A CDN can serve public or appropriately protected hot downloads.",
+    "category": "SystemDesign",
+    "referenceUrls": [
+      "https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html",
+      "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html"
+    ]
+  },
+  {
     "question": "How would you paginate a large collection in a public API?",
     "shortAnswer": "Return bounded pages with an opaque continuation token and a next-page token, and design pagination into the API from the start.",
     "longAnswer": "Define a maximum page size and return a continuation token that identifies where to continue without exposing internal query state. Keep the other filters and sort parameters stable across pages, and signal the end by omitting the next-page token. Pagination limits response size and lookup work as collections grow; adding it later can change existing client behavior, so include it in the initial API contract.",
     "category": "Backend",
     "referenceUrls": [
       "https://google.aip.dev/158"
+    ]
+  },
+  {
+    "question": "What are the roles of GET, POST, PUT, PATCH, and DELETE in an HTTP API?",
+    "shortAnswer": "GET retrieves, POST submits or creates, PUT replaces a target resource, PATCH applies a partial change, and DELETE removes a target resource.",
+    "longAnswer": "Use the HTTP method to express the requested operation: GET should be read-only; POST commonly creates a subordinate resource or triggers server-defined processing; PUT creates or replaces the representation at a known target URI; PATCH applies a partial modification; DELETE requests removal. GET, PUT, and DELETE have idempotent semantics, while POST and PATCH are not generally idempotent. An API can still make a particular POST or PATCH operation safe to retry with an idempotency key.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods"
     ]
   },
   {
