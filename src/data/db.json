@@ -117,6 +117,17 @@
     ]
   },
   {
+    "question": "A variable captured by a closure keeps returning an outdated value. Why can that happen, and how is it different from a closure retaining memory unnecessarily?",
+    "shortAnswer": "A closure reads bindings from the lexical environment where it was created, so a callback from an older invocation or render can keep reading that older binding. A memory leak is a reachability problem: a long-lived callback unnecessarily keeps objects alive.",
+    "longAnswer": "A closure does not freeze every outer variable. Closures over the same mutable binding see that binding's current value, but each function call or React render can create a different binding; a callback created in an earlier one can therefore keep returning its earlier value. For example, an event handler created by a render reads that render's state snapshot. This is a stale-value issue. A memory leak is different: a timer, listener, or cache keeps a closure reachable, and the closure in turn keeps an otherwise unused object graph reachable. Read the current value or recreate the work when the relevant state changes, and remove listeners, timers, or cache entries when they are no longer needed.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management",
+      "https://react.dev/learn/state-as-a-snapshot"
+    ]
+  },
+  {
     "question": "How does JavaScript choose the value of this?",
     "shortAnswer": "For ordinary functions, this is determined by how the function is called (or explicitly bound). Arrow functions capture this lexically and do not create their own this.",
     "longAnswer": "For an ordinary function, this depends on the call: user.say() uses user, while a detached say() does not automatically retain user. bind can fix an ordinary function's receiver. An arrow function instead captures this from its surrounding scope, which is useful for a callback that should keep that receiver. The trade-off is that an arrow function cannot gain a new this from the object or event that later calls it.",
@@ -134,6 +145,16 @@
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
       "https://tc39.es/ecma262/"
+    ]
+  },
+  {
+    "question": "Promises are asynchronous, so how can a long chain of resolved Promises still freeze the UI?",
+    "shortAnswer": "Promise reactions are microtasks, not work moved off the main thread. The browser drains microtasks before it can render, so a long or self-replenishing chain can delay frames and input.",
+    "longAnswer": "A resolved Promise queues its then callback as a microtask. When the current JavaScript stack ends, the browser drains the microtask queue before it considers an update to rendering. A long finite chain therefore keeps the main thread busy until its callbacks finish, and a chain that continually queues more microtasks can starve rendering and other tasks. Promise-based waiting does not make CPU work run in parallel. Break expensive work into chunks that yield through separate tasks, or move CPU-heavy work to a Web Worker; awaiting an already-resolved Promise only queues another microtask and may not give the browser a rendering opportunity.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
+      "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/JavaScript"
     ]
   },
   {
@@ -157,6 +178,27 @@
     ]
   },
   {
+    "question": "An error thrown inside an asynchronous callback escapes the surrounding try/catch. Why, and where should the error be handled?",
+    "shortAnswer": "A surrounding try/catch only catches errors thrown while its block is running; a scheduled callback runs later, after that block has exited. Catch inside the callback or handle the Promise rejection at the boundary that owns the operation.",
+    "longAnswer": "For example, try { setTimeout(() => { throw new Error('failed'); }, 0); } catch (error) { ... } does not catch the callback's error because setTimeout returns and the try block finishes before the callback runs. Put a try/catch inside the callback if it is synchronous, or use an API that returns a Promise and catch its rejection with await inside try/catch or with .catch(). An async callback passed to an API that ignores its returned Promise can still produce an unhandled rejection, so attach handling there or return the Promise to a caller that will handle it.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch",
+      "https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+    ]
+  },
+  {
+    "question": "A page feels slow even though its API responses are fast. How would you determine whether JavaScript execution, layout, paint, or compositing is responsible?",
+    "shortAnswer": "Record the slow interaction in the browser Performance panel and inspect the main-thread trace for scripting, style or layout, paint, and composite work; compare it with network timing to separate response delay from rendering work.",
+    "longAnswer": "Reproduce the slow interaction and record it in browser DevTools' Performance panel. Compare request timing with the interaction timeline, then inspect long main-thread tasks and their call stacks: heavy scripting points to JavaScript, Recalculate Style or Layout points to style and reflow work, Paint points to repaint work, and Composite Layers points to compositing. A forced layout event can reveal JavaScript that reads layout after changing styles. Use paint flashing or layer borders to check what is being repainted or composited, then change one suspected cause and record again; a fast response alone does not show that the main thread had time to update the screen.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.chrome.com/docs/devtools/performance/reference",
+      "https://developer.chrome.com/docs/devtools/rendering/performance"
+    ]
+  },
+  {
     "question": "What is the difference between ES modules and CommonJS?",
     "shortAnswer": "ES modules use import/export with static module structure and are standardized by ECMAScript. CommonJS uses require/module.exports, historically common in Node. Interoperability and loading behavior depend on package and runtime configuration.",
     "longAnswer": "ES modules declare imports and exports statically, which helps tooling analyze dependencies and enables features such as tree shaking. CommonJS uses require and module.exports and remains common in older Node packages. For a new project, ESM often aligns with modern tooling, while an existing CommonJS service may keep it to avoid changing package and loader behavior. Their resolution and interoperability rules differ, so converting a file can require changes to package configuration and imports rather than a syntax-only replacement.",
@@ -164,6 +206,26 @@
     "referenceUrls": [
       "https://nodejs.org/api/modules.html",
       "https://nodejs.org/api/esm.html"
+    ]
+  },
+  {
+    "question": "A cross-origin request works in Postman but fails in the browser. What is CORS enforcing, when does a preflight happen, and what can frontend code control?",
+    "shortAnswer": "The browser enforces the same-origin policy and CORS response rules; it automatically preflights requests with non-safelisted methods or headers. Frontend code can shape the request, but only the server can grant browser access with CORS response headers.",
+    "longAnswer": "Postman is not subject to the browser's same-origin policy. Browser JavaScript can make some cross-origin requests, but the browser will not expose the response to the page unless the server returns suitable Access-Control-Allow-Origin and related headers. For a request using a non-safelisted method, header, or content type, the browser first sends an automatic OPTIONS preflight describing the origin, method, and requested headers; the actual request proceeds only if the server allows it. Frontend code controls the method, headers, content type, and whether credentials are requested, which can affect preflight and credential rules. It cannot grant itself permission or set the server's Access-Control-Allow-Origin response header; the API server or a trusted proxy must be configured to allow the origin.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS",
+      "https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request"
+    ]
+  },
+  {
+    "question": "Authentication works, but token storage and transmission may be unsafe. What would you examine around cookies, browser storage, XSS, CSRF, and SameSite?",
+    "shortAnswer": "Check whether JavaScript can read the token and whether the browser sends it automatically. XSS can expose script-readable storage, while automatically sent cookies create CSRF risk; HttpOnly, Secure, SameSite, and explicit CSRF defenses address different parts of that risk.",
+    "longAnswer": "First identify where credentials live and how they are sent. Tokens in localStorage or sessionStorage are readable by JavaScript on the origin, so an XSS flaw can steal them; persistent storage can also leave credentials behind after logout. HttpOnly cookies prevent JavaScript from reading the cookie, but active XSS can still make authenticated requests. Secure restricts cookie transmission to HTTPS, while SameSite=Lax or Strict limits some cross-site cookie sends; SameSite=None requires Secure. Because cookies are attached automatically, state-changing cookie-authenticated requests still need an appropriate CSRF defense, such as a CSRF token and origin checks. Choose the storage and transport together, set expiry and rotation rules, and do not treat any one cookie flag as a complete defense.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html",
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
     ]
   },
   {
@@ -268,6 +330,17 @@
     "category": "Javascript",
     "referenceUrls": [
       "https://webpack.js.org/guides/tree-shaking/"
+    ]
+  },
+  {
+    "question": "Memoization was added to improve performance, but the application became slower and used more memory. How can that happen?",
+    "shortAnswer": "Cache lookup, key creation, comparisons, and invalidation can cost more than recomputing a cheap result, while a cache that retains keys and results can keep growing and hold large object graphs in memory.",
+    "longAnswer": "Memoization only helps when reuse saves more work than the cache adds. Building or serializing keys, comparing dependencies, looking up entries, and invalidating stale results can make a cheap calculation slower. A Map also strongly retains its keys and values, so an unbounded cache can accumulate entries and keep large results alive after the rest of the application no longer needs them. Measure the calculation and cache overhead, choose stable keys, bound or clear entries when appropriate, and avoid caching cheap work without evidence. WeakMap can help with metadata keyed by object lifetime, but it is not a general replacement for an intentionally bounded cache.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+      "https://react.dev/reference/react/useMemo"
     ]
   },
   {
