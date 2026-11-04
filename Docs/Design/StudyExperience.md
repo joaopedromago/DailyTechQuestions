@@ -7,10 +7,10 @@ question catalog ownership are summarized in [Current Application](../Systems/Cu
 
 ## Purpose and home menu
 
-The app is a self-guided study tool for Node, TypeScript, JavaScript, React, Computer Science, AI
-Tools, System Design, Backend, and JavaScript code-output questions. It does not ask learners to
-submit answers, grade responses, award points, or compete. Questions can be reviewed alone or
-discussed with another person.
+The app is a self-guided study tool for Node, Python, TypeScript, JavaScript, React, Computer
+Science, AI Tools, System Design, Backend, and JavaScript code-output questions. It does not ask
+learners to submit answers, grade responses, award points, or compete. Questions can be reviewed
+alone or discussed with another person.
 
 The home menu presents four actions: **Start Random Quiz**, **View Questions**, **Continue**, and
 **History**. Continue remains disabled until history hydration completes and opens the newest-created

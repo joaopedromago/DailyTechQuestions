@@ -573,6 +573,253 @@
     ]
   },
   {
+    "question": "Why can a mutable default argument retain state across calls, and how should a function avoid unwanted sharing?",
+    "shortAnswer": "Default values are evaluated once when the function is defined, so a mutable default is reused across calls. Use a None sentinel and create a new value inside the function.",
+    "longAnswer": "Python evaluates a function’s default argument expressions when the def statement runs, not each time the function is called. If that default is a list or dictionary and the function mutates it, later calls see the same object and its accumulated state. When that sharing is unintended, use None as the default and allocate a fresh collection inside the function; shared state can still be intentional when documented.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/tutorial/controlflow.html#default-argument-values"
+    ]
+  },
+  {
+    "question": "What is the difference between an iterable, an iterator, and a generator, and when is lazy iteration useful?",
+    "shortAnswer": "An iterable can produce an iterator, an iterator yields values one at a time, and a generator is a convenient iterator created with yield or a generator expression.",
+    "longAnswer": "Calling iter on an iterable returns an iterator, whose next method produces successive values until StopIteration. A generator function pauses at yield and resumes with its saved local state on the next request. Lazy iteration can avoid building a large intermediate list and lets a pipeline process values as they arrive, though a generator is normally consumed only once and must be recreated to start over.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/tutorial/classes.html#generators",
+      "https://docs.python.org/3.14/glossary.html#term-iterator"
+    ]
+  },
+  {
+    "question": "How do decorators wrap a callable, and why might functools.wraps matter?",
+    "shortAnswer": "A decorator takes a callable and returns a replacement callable, often adding behavior around the original call. functools.wraps copies useful metadata from the wrapped callable.",
+    "longAnswer": "Decorator syntax applies a decorator to a function when the definition executes, which is conceptually similar to assigning the function name to the result of decorator(function). The returned wrapper can run setup or cleanup around the original call, or transform its result. functools.wraps uses update_wrapper to preserve metadata such as the original name and documentation, helping introspection tools report the wrapped callable.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/glossary.html#term-decorator",
+      "https://docs.python.org/3.14/library/functools.html#functools.wraps"
+    ]
+  },
+  {
+    "question": "How does a context manager ensure cleanup when a block exits normally or raises?",
+    "shortAnswer": "The with statement calls __enter__ before the block and __exit__ when it leaves, including when an exception occurs, so __exit__ can release resources.",
+    "longAnswer": "A context manager defines __enter__ and __exit__. The with statement calls __enter__ to establish the context and calls __exit__ on normal completion or while unwinding an exception, making it a reliable place to close a file, release a lock, or restore state. Returning true from __exit__ suppresses the exception; contextlib provides helpers for implementing this pattern.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/reference/datamodel.html#with-statement-context-managers",
+      "https://docs.python.org/3.14/library/contextlib.html"
+    ]
+  },
+  {
+    "question": "How does Python’s method resolution order resolve methods in multiple inheritance?",
+    "shortAnswer": "The method resolution order is the ordered list Python searches for an attribute. Python uses C3 linearization to keep that order consistent with the declared base classes.",
+    "longAnswer": "Python computes a class’s MRO when the class is created and searches that order for methods and attributes. C3 linearization respects the local order of base classes while keeping shared ancestors in a consistent position. super follows the next class in that MRO, so cooperative methods in multiple inheritance should call super rather than naming a particular parent.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/howto/mro.html",
+      "https://docs.python.org/3.14/reference/datamodel.html#type.__mro__"
+    ]
+  },
+  {
+    "question": "What makes an object hashable, and why must equal objects have compatible hashes for use as dictionary or set keys?",
+    "shortAnswer": "A hashable object has a stable hash during its lifetime, and equal objects must have equal hashes. Dictionaries and sets use the hash to find candidates, then equality to distinguish them.",
+    "longAnswer": "Hashing lets dictionaries and sets locate a bucket efficiently, while equality resolves collisions and confirms whether a key matches. The required contract is that objects that compare equal have the same hash; the reverse is not required. A key’s hash must remain stable while it is stored, so mutable objects whose equality-relevant state can change are generally unsafe keys.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/reference/datamodel.html#object.__hash__",
+      "https://docs.python.org/3.14/glossary.html#term-hashable"
+    ]
+  },
+  {
+    "question": "How do Python type hints support development, and do they enforce types at runtime?",
+    "shortAnswer": "Type hints document expected types and support static checkers and editor tooling, but Python does not automatically enforce them at runtime.",
+    "longAnswer": "Annotations attach type information to functions, variables, and classes so developers, IDEs, and static type checkers can reason about intended inputs and outputs. The interpreter does not reject a value merely because it conflicts with an annotation; runtime validation requires explicit checks or a library that performs them. Hints therefore improve feedback and maintainability without replacing input validation at system boundaries.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/typing.html",
+      "https://docs.python.org/3.14/tutorial/controlflow.html#function-annotations"
+    ]
+  },
+  {
+    "question": "How does the GIL affect CPU-bound threads in standard CPython, and when would threads, processes, or asyncio fit better?",
+    "shortAnswer": "In standard GIL-enabled CPython, threads can overlap blocking I/O but usually do not execute Python bytecode in parallel. Processes suit CPU parallelism, while asyncio suits many cooperative I/O tasks.",
+    "longAnswer": "The Global Interpreter Lock in a standard CPython build allows only one thread at a time to execute Python code, although the interpreter releases it around many blocking I/O operations. Threads can therefore improve throughput for I/O waits, while processes or a process pool can use multiple CPU cores at the cost of process and data-transfer overhead. Asyncio multiplexes nonblocking I/O on an event loop and requires tasks not to block that loop. CPython also offers optional free-threaded builds, whose behavior and extension support should be checked for the target deployment.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/threading.html#gil-and-performance-considerations",
+      "https://docs.python.org/3.14/library/multiprocessing.html",
+      "https://docs.python.org/3.14/library/asyncio.html",
+      "https://docs.python.org/3.14/howto/free-threading-python.html"
+    ]
+  },
+  {
+    "question": "Explain Django’s Model-View-Template architecture and how it differs from MVC.",
+    "shortAnswer": "Django models describe data, views handle requests and coordinate work, and templates render presentation. Django’s view commonly plays a controller-like role in MVC.",
+    "longAnswer": "A Django model defines data and its database behavior, a view receives a request and returns a response, and a template renders presentation from context. The names do not map one-to-one to every MVC framework: Django’s view often performs the controller role, while the template is closer to the presentation view. The useful distinction is where data rules, request handling, and presentation belong.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/intro/overview/",
+      "https://docs.djangoproject.com/en/6.1/intro/tutorial03/"
+    ]
+  },
+  {
+    "question": "Walk through Django’s request/response cycle, including middleware and URL resolution.",
+    "shortAnswer": "Django processes the request through middleware, resolves its path to a view, and passes the returned response back through response middleware.",
+    "longAnswer": "Django creates an HttpRequest and applies request middleware in the configured order before resolving the URL to a view. The view may read models, render a template, or build another response. Django then applies response middleware in reverse order before returning the HttpResponse. Middleware can also short-circuit the request, so order affects which components see a request and response.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/http/middleware/",
+      "https://docs.djangoproject.com/en/6.1/topics/http/urls/"
+    ]
+  },
+  {
+    "question": "When does a Django QuerySet execute, and how can lazy evaluation affect database load?",
+    "shortAnswer": "Building and filtering a QuerySet is usually lazy; the database is queried when results are evaluated, such as by iteration or conversion to a list.",
+    "longAnswer": "QuerySet methods that refine a query generally return another unevaluated QuerySet, allowing filters to be composed before a database call. Iteration, list conversion, boolean checks, and other evaluation operations execute SQL and may populate the QuerySet result cache. Accidental evaluation inside a loop or repeated use of fresh QuerySets can issue more queries than expected, so inspect where evaluation happens and reuse results when appropriate.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/db/queries/"
+    ]
+  },
+  {
+    "question": "How do select_related and prefetch_related differ, and how do they help avoid N+1 queries?",
+    "shortAnswer": "select_related joins single-valued relations in the main SQL query; prefetch_related fetches related rows in additional batch queries and supports multi-valued relations.",
+    "longAnswer": "Both methods avoid repeated per-object lookups when related data will be accessed. select_related uses SQL joins and is limited to single-valued foreign-key and one-to-one relations. prefetch_related runs separate queries and joins the results in Python, so it can handle many-to-many and other multi-valued relationships. Choose based on the relationship and data shape, and verify the resulting query count rather than prefetching everything.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/db/optimization/",
+      "https://docs.djangoproject.com/en/6.1/ref/models/querysets/"
+    ]
+  },
+  {
+    "question": "How do Django migrations represent schema changes, and what should be considered when deploying changes to a live database?",
+    "shortAnswer": "Migrations are versioned operations with dependencies that move a database schema between states. Live deployments should account for locking, table size, and compatibility with running application versions.",
+    "longAnswer": "Django records model changes as migration operations in a dependency graph, and migrate applies the required operations to bring a database to the selected state. Before a production migration, inspect the operations and generated SQL, test against realistic data volume, and consider lock duration and whether old and new application versions can both run during rollout. Large or incompatible changes are safer when divided into staged, backward-compatible steps.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/migrations/",
+      "https://docs.djangoproject.com/en/6.1/topics/migrations/operations/"
+    ]
+  },
+  {
+    "question": "How does transaction.atomic define transaction boundaries and affect commit or rollback when errors occur?",
+    "shortAnswer": "transaction.atomic makes a block all-or-nothing: an exception escaping the block rolls back its transaction or savepoint, while successful exit commits at the outer boundary.",
+    "longAnswer": "An atomic block commits its work when it exits successfully and rolls it back when a database error or other exception escapes the block. Nested atomic blocks normally use savepoints, so a failed inner block can roll back without discarding earlier outer work. Catch database errors outside the relevant atomic block, and use on_commit for side effects that should happen only after the transaction is durable.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/db/transactions/"
+    ]
+  },
+  {
+    "question": "What protections does Django provide for SQL injection, CSRF, and XSS, and what must developers still do?",
+    "shortAnswer": "Django parameterizes ORM queries, provides CSRF protections, and autoescapes template output, but developers must use those protections correctly and handle unsafe raw SQL or HTML carefully.",
+    "longAnswer": "Django’s ORM separates SQL parameters from query structure, its CSRF protections validate state-changing requests when enabled and used correctly, and its templates escape many dangerous characters by default. These safeguards have limits: raw SQL must parameterize user input, untrusted HTML must not be marked safe, and CSRF protections must not be disabled casually. Security also depends on deployment settings, HTTPS, and careful handling of all user-controlled data.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/security/",
+      "https://docs.djangoproject.com/en/6.1/ref/csrf/"
+    ]
+  },
+  {
+    "question": "How do Django REST Framework serializers and permissions divide data validation, representation, and API access control?",
+    "shortAnswer": "Serializers convert and validate input and represent output; permission classes decide whether a request or object may be accessed.",
+    "longAnswer": "A serializer turns incoming primitive data into validated_data and represents model or application objects as response data. Permission checks run before the main view logic and can enforce request-level or object-level rules. Object permissions do not automatically filter every item in a list response, so list endpoints must also restrict their queryset to records the caller may see.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://www.django-rest-framework.org/api-guide/serializers/",
+      "https://www.django-rest-framework.org/api-guide/permissions/"
+    ]
+  },
+  {
+    "question": "What does Django’s async support enable, and where do synchronous ORM or middleware boundaries still matter?",
+    "shortAnswer": "Async views can overlap I/O waits, especially under ASGI, but synchronous-only code and transaction boundaries still require care.",
+    "longAnswer": "Django supports async views and an async request path under ASGI, allowing independent I/O operations to overlap. Many ORM operations have async variants, but calling synchronous-only code directly from an async context can block the event loop or raise an async-safety error. Transactions are not supported through the async ORM path, so transaction-dependent work should be kept in a synchronous function and bridged with sync_to_async. Sync-only middleware can also add adaptation overhead.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.djangoproject.com/en/6.1/topics/async/",
+      "https://docs.djangoproject.com/en/6.1/topics/db/queries/"
+    ]
+  },
+  {
+    "question": "What is the difference between a coroutine object and an asyncio Task, and what starts executing a coroutine?",
+    "shortAnswer": "Calling an async function creates a coroutine object without running its body. Awaiting it or scheduling it as a Task lets the event loop execute it.",
+    "longAnswer": "A coroutine object represents work described by an async function but does not run just because the function was called. Awaiting the coroutine drives it in the current task, while asyncio.create_task schedules it as a Task on the running event loop. A Task tracks completion, results, exceptions, and cancellation, and can itself be awaited.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html#coroutines",
+      "https://docs.python.org/3.14/library/asyncio-task.html#task-object"
+    ]
+  },
+  {
+    "question": "How does the asyncio event loop schedule coroutines, and what does await yield?",
+    "shortAnswer": "The event loop runs one task at a time and can switch when an awaited operation suspends. Blocking or CPU-heavy code that does not yield prevents other tasks from progressing.",
+    "longAnswer": "Asyncio uses cooperative scheduling: a running task keeps control until it awaits an awaitable that actually suspends, at which point the event loop can run another ready task. Await does not guarantee a switch if the awaited operation is already complete. This model can handle many I/O waits efficiently, but it does not make CPU-bound Python code parallel and it makes blocking calls on the event-loop thread especially harmful.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html",
+      "https://docs.python.org/3.14/library/asyncio-eventloop.html"
+    ]
+  },
+  {
+    "question": "When should you use asyncio.gather versus asyncio.TaskGroup, especially when a task fails?",
+    "shortAnswer": "gather collects results in input order and normally propagates the first exception without cancelling siblings; TaskGroup provides structured concurrency and cancels remaining tasks when a child fails.",
+    "longAnswer": "Use gather when you want a result list corresponding to the input order and understand its exception behavior; with return_exceptions enabled, failures are returned as result values. TaskGroup scopes related tasks to an async with block, waits for them on exit, cancels siblings after a non-cancellation failure, and reports failures in an exception group. The choice should reflect the failure policy and lifetime you want for the group of work.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html#running-tasks-concurrently",
+      "https://docs.python.org/3.14/library/asyncio-task.html#task-groups"
+    ]
+  },
+  {
+    "question": "How does cancellation reach an asyncio task, and what cleanup should a coroutine perform before re-raising CancelledError?",
+    "shortAnswer": "Cancellation causes CancelledError to be raised at a suspension point. Use try/finally to release resources, then normally let cancellation propagate.",
+    "longAnswer": "Calling Task.cancel requests cancellation; CancelledError is raised in the coroutine at its next opportunity to suspend. A coroutine should use finally blocks to release locks, close resources, or restore state. If it catches CancelledError for cleanup, it should generally re-raise it afterward because TaskGroup and timeout behavior rely on cancellation being preserved.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html#task-cancellation"
+    ]
+  },
+  {
+    "question": "How do asyncio timeouts interact with task cancellation, and what should code consider for cleanup and partially completed work?",
+    "shortAnswer": "Asyncio timeouts use cancellation to stop waiting, and cleanup can make an operation finish after the nominal deadline. Cancellation does not undo side effects that already occurred.",
+    "longAnswer": "asyncio.timeout cancels the current task at the deadline and converts that cancellation to TimeoutError when leaving its context. asyncio.wait_for cancels the awaited operation and waits for cancellation to complete, so total elapsed time can exceed the requested timeout. Cleanup may still run and external work may already have partially completed, so use operation-level timeouts, idempotency, and reconciliation where partial side effects are possible.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html#timeouts",
+      "https://docs.python.org/3.14/library/asyncio-task.html#task-cancellation"
+    ]
+  },
+  {
+    "question": "How should an async service handle blocking I/O or CPU-bound work without starving the event loop?",
+    "shortAnswer": "Use async-native libraries for I/O, move unavoidable blocking I/O to a worker thread, and use processes or another worker system for CPU-heavy Python work.",
+    "longAnswer": "A blocking call on the event-loop thread prevents every other task on that loop from running until the call returns. Prefer an async-native client for network or database I/O; asyncio.to_thread can bridge blocking I/O libraries, while a process pool or separate worker service is usually a better fit for CPU-bound Python work. Bound the worker capacity and measure the workload because threads and processes add scheduling and data-transfer costs.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-task.html#running-in-threads",
+      "https://docs.python.org/3.14/library/multiprocessing.html"
+    ]
+  },
+  {
+    "question": "How can an asyncio.Semaphore limit concurrent calls to a downstream service, and what trade-offs should you consider?",
+    "shortAnswer": "A semaphore allows only a configured number of tasks into a protected section at once, bounding in-flight calls but making excess tasks wait.",
+    "longAnswer": "Use an asyncio.Semaphore as an async context manager around the downstream operation so acquisition and release happen safely. Set the limit based on the service’s capacity, client connection pool, and latency goals; too high can overload the dependency, while too low can leave capacity unused. A semaphore limits active work but does not by itself bound the number of waiting task objects, so high-volume inputs may also need a bounded queue and fixed worker count.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-sync.html#asyncio.Semaphore"
+    ]
+  },
+  {
+    "question": "When is a bounded asyncio.Queue preferable to creating a task for every input, and how does it create backpressure?",
+    "shortAnswer": "A bounded queue and fixed worker tasks cap both queued work and active processing. Producers wait when the queue is full, which slows intake to match worker capacity.",
+    "longAnswer": "An asyncio.Queue with maxsize blocks put when it reaches capacity, applying backpressure to producers instead of allowing an unbounded backlog. A fixed set of workers can consume items, call task_done after processing, and let a coordinator use join to wait for the queue to drain. This bounds memory and task count, but the application still needs a policy for shutdown, retries, and items that fail.",
+    "category": "Python",
+    "referenceUrls": [
+      "https://docs.python.org/3.14/library/asyncio-queue.html",
+      "https://docs.python.org/3.14/library/asyncio-task.html#task-groups"
+    ]
+  },
+  {
     "question": "What should an API validate before applying a mutation?",
     "shortAnswer": "Authenticate the caller, authorize the requested resource within the caller's tenant, validate and normalize the body and path/query inputs, enforce business invariants transactionally, and return a documented status and response shape.",
     "longAnswer": "Before changing data, authenticate the caller, authorize the specific resource and tenant, validate path, query, and body values, and enforce business invariants inside the transaction that writes the change. For example, an update to a patient record must verify both tenant membership and permission for that record before applying a validated status transition. Early validation saves work and gives clear errors, while transactional checks protect against concurrent changes. A client form or TypeScript type cannot enforce any of these checks on the server.",

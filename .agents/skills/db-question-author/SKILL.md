@@ -23,7 +23,7 @@ JSON array; preserve its existing order and do not add unrelated application cod
 
 - Keep exactly these keys in this order: `question`, `shortAnswer`, `longAnswer`, `category`,
   `referenceUrls`.
-- Use `Javascript`, `Typescript`, `React`, `Node`, `AI`, `ComputerScience`, `SystemDesign`,
+- Use `Javascript`, `Typescript`, `React`, `Node`, `Python`, `AI`, `ComputerScience`, `SystemDesign`,
   `Backend`, or `JavascriptCode` for `category`. For mixed topics, choose the primary subject of
   the question.
 - Keep at least one question in every category. If a requested removal would empty a category, flag

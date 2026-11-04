@@ -61,8 +61,9 @@ has these fields:
 - `category`: the source category value.
 - `referenceUrls`: external reference links.
 
-The current category values are `Node`, `Typescript`, `Javascript`, `React`, `ComputerScience`,
-`AI`, `SystemDesign`, `Backend`, and `JavascriptCode`. [`src/data/questions.ts`](../../src/data/questions.ts)
+The current category values are `Node`, `Python`, `Typescript`, `Javascript`, `React`,
+`ComputerScience`, `AI`, `SystemDesign`, `Backend`, and `JavascriptCode`.
+[`src/data/questions.ts`](../../src/data/questions.ts)
 types the records and supplies display labels such as “Computer Science”, “AI Tools”, “System
 Design”, and “JavaScript Code” without changing catalog values.
 

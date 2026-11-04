@@ -21,6 +21,7 @@ CATEGORY_ORDER = (
     "Typescript",
     "React",
     "Node",
+    "Python",
     "AI",
     "ComputerScience",
     "SystemDesign",
