@@ -14,6 +14,11 @@ links to temporary quiz setup and question browsing screens; the study flows and
 are still planned. See the [study experience contract](Docs/Design/StudyExperience.md),
 [UI architecture contract](Docs/Design/UIArchitecture.md), and [implementation TODOs](Docs/TODOs.md).
 
+## Web app
+
+Access the production web app at [dailytechquestions.jaomago.com](https://dailytechquestions.jaomago.com/).
+Vercel deploys production updates from `main` and creates preview deployments for pull requests.
+
 ## Requirements
 
 - Node.js 22, within the versions supported by `package.json`
