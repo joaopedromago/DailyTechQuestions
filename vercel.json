@@ -1,0 +1,15 @@
+{
+  "buildCommand": "expo export -p web",
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "dist/server/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
+}
