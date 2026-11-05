@@ -7,10 +7,10 @@ question catalog ownership are summarized in [Current Application](../Systems/Cu
 
 ## Purpose and home menu
 
-The app is a self-guided study tool for Node, Python, TypeScript, JavaScript, React, Computer
-Science, AI Tools, System Design, Backend, and JavaScript code-output questions. It does not ask
-learners to submit answers, grade responses, award points, or compete. Questions can be reviewed
-alone or discussed with another person.
+The app is a self-guided study tool for Node, NestJS, Python, TypeScript, JavaScript, React,
+Computer Science, AI Tools, System Design, Backend, and JavaScript code-output questions. It does
+not ask learners to submit answers, grade responses, award points, or compete. Questions can be
+reviewed alone or discussed with another person.
 
 The home menu presents four actions: **Start Random Quiz**, **View Questions**, **Continue**, and
 **History**. Continue remains disabled until history hydration completes and opens the newest-created
@@ -23,9 +23,9 @@ label.
 ## Random quiz
 
 Quiz setup derives its categories from the distinct `category` values in `src/data/db.json` and
-selects all of them by default. `ComputerScience` is displayed as “Computer Science”, `AI` as “AI
-Tools”, `SystemDesign` as “System Design”, and `JavascriptCode` as “JavaScript Code”; source
-values remain unchanged.
+selects all of them by default. `NestJS` is displayed as “NestJS”, `ComputerScience` is displayed
+as “Computer Science”, `AI` as “AI Tools”, `SystemDesign` as “System Design”, and `JavascriptCode`
+as “JavaScript Code”; source values remain unchanged.
 
 A bulk selection action selects all categories when none are selected, selects the remaining
 categories for a partial selection, and clears all when every category is selected. At least one

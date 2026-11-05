@@ -573,6 +573,159 @@
     ]
   },
   {
+    "question": "What architectural roles do modules, controllers, and providers play in a NestJS application?",
+    "shortAnswer": "Modules organize related capabilities, controllers handle incoming requests, and providers hold injectable application logic.",
+    "longAnswer": "A module groups related controllers and providers and defines what it imports or exposes. A controller maps HTTP routes and delegates work to providers such as services, which Nest can inject. For example, a CatsModule can register CatsController and CatsService so request handling stays separate from application logic.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/modules",
+      "https://docs.nestjs.com/controllers",
+      "https://docs.nestjs.com/providers"
+    ]
+  },
+  {
+    "question": "How does constructor-based dependency injection work in NestJS, and where are providers registered?",
+    "shortAnswer": "A module registers providers, and Nest injects matching provider tokens into a class constructor when it creates that class.",
+    "longAnswer": "Mark an injectable service with @Injectable(), register it in a module's providers list, and declare it as a constructor dependency of a consumer. Nest's injector resolves that dependency when it instantiates the consumer. For example, a CatsController can receive CatsService through its constructor instead of creating it directly, which also makes the controller easier to test with a replacement provider.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/providers",
+      "https://docs.nestjs.com/modules"
+    ]
+  },
+  {
+    "question": "How do imports and exports control which NestJS providers another module can inject?",
+    "shortAnswer": "A module makes selected providers available by exporting them, and a consuming module imports the module that exports them.",
+    "longAnswer": "Providers are encapsulated by their declaring module. Add a provider to that module's providers list and export the provider or its token; then add the exporting module to the consumer's imports list. This makes the dependency boundary explicit. For example, OrdersModule can inject a service from UsersModule only when UsersModule exports it and OrdersModule imports UsersModule.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/modules"
+    ]
+  },
+  {
+    "question": "When would you use useValue, useClass, or useFactory in a NestJS custom provider?",
+    "shortAnswer": "Use useValue for an existing value, useClass to choose an implementation class, and useFactory to construct a value from dependencies.",
+    "longAnswer": "Each custom provider binds an injection token to a value or construction strategy. useValue can supply a constant or test double, useClass selects which class Nest should instantiate for a token, and useFactory computes a value and can receive dependencies listed in inject. For example, a connection provider can use a factory to create a database connection from injected configuration. Export its token if another module needs it.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/custom-providers"
+    ]
+  },
+  {
+    "question": "What is a dynamic module in NestJS, and when would you use one?",
+    "shortAnswer": "A dynamic module returns module metadata configured at import time, which is useful when a reusable module needs caller-supplied options.",
+    "longAnswer": "A dynamic module exposes a method such as forRoot() or register() that returns module metadata, including providers or imports configured from supplied options. This lets a reusable module adapt to an application's configuration while keeping its implementation encapsulated. For example, a feature-flags module can receive a flag map when imported and provide a service that reads it. Configure a shared module once when consumers should share the same configured instance.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/dynamic-modules",
+      "https://docs.nestjs.com/modules"
+    ]
+  },
+  {
+    "question": "How does NestJS middleware differ from a guard?",
+    "shortAnswer": "Middleware runs early in request processing, while a guard decides whether Nest should invoke the selected route handler.",
+    "longAnswer": "Middleware runs before a route handler is selected and is useful for request-level work such as logging or changing the request. A guard runs after middleware and before interceptors or pipes; it has access to route execution context and commonly makes an authorization decision. Use a guard when the decision depends on the selected controller or handler, and keep general request processing in middleware.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/middleware",
+      "https://docs.nestjs.com/guards",
+      "https://docs.nestjs.com/faq/request-lifecycle"
+    ]
+  },
+  {
+    "question": "How can a NestJS guard use execution context to decide whether a route may run?",
+    "shortAnswer": "A guard implements CanActivate, inspects the current execution context, and returns whether the request may continue to the handler.",
+    "longAnswer": "Nest calls a guard's canActivate() method before the route handler. The ExecutionContext can expose the request as well as the current controller and handler, so a guard can check the authenticated user or route metadata. For example, a roles guard can read the required roles and compare them with the user's roles, returning true when access is allowed and denying the request otherwise. Guards can be applied globally, to a controller, or to an individual route.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/guards",
+      "https://docs.nestjs.com/fundamentals/execution-context"
+    ]
+  },
+  {
+    "question": "What are pipes responsible for in NestJS, and when do they transform or reject input?",
+    "shortAnswer": "Pipes transform route input into the expected form or validate it, returning valid data and throwing an exception for invalid data.",
+    "longAnswer": "A pipe implements PipeTransform and runs on values passed to a route handler, often route parameters or request bodies. A transformation pipe can convert a path parameter from a string to an integer; a validation pipe can check a DTO and reject invalid data with an exception. Pipes can be bound to a parameter, route, controller, or application, so choose the narrowest scope that matches the rule.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/pipes"
+    ]
+  },
+  {
+    "question": "How do NestJS ValidationPipe options such as whitelist and transform affect request DTOs?",
+    "shortAnswer": "whitelist strips properties without validation decorators, while transform converts plain payloads into DTO instances and can convert primitive parameters.",
+    "longAnswer": "ValidationPipe applies DTO validation to incoming values when the DTO defines validation metadata. With whitelist enabled, properties without validation decorators are removed; adding forbidNonWhitelisted makes extra properties produce an error instead. With transform enabled, plain request payloads become DTO class instances, and primitive route values can be converted to their declared types. These options control input handling at the boundary, but the DTO still needs appropriate validation rules.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/techniques/validation"
+    ]
+  },
+  {
+    "question": "How do NestJS interceptors wrap route handlers and transform their results?",
+    "shortAnswer": "An interceptor can run before and after a handler, and it can use the handler's result stream to apply shared behavior or transform the response.",
+    "longAnswer": "An interceptor implements NestInterceptor and receives an ExecutionContext plus a CallHandler. Calling next.handle() continues to the route handler and returns its result as an observable, which the interceptor can wrap with RxJS operators. This supports cross-cutting behavior such as timing, response mapping, or caching in one place. Interceptors run on the inbound path before pipes and on the return path after the handler completes.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/interceptors",
+      "https://docs.nestjs.com/faq/request-lifecycle"
+    ]
+  },
+  {
+    "question": "When should a NestJS exception filter handle an error?",
+    "shortAnswer": "An exception filter handles an uncaught exception when an application needs a custom response or error-handling behavior.",
+    "longAnswer": "Nest's built-in exception layer already handles uncaught exceptions and sends an appropriate response. A custom exception filter is useful when the application needs a specific response format, logging, or another policy for a class of errors. Filters do not run for exceptions the handler catches itself, and once an uncaught exception reaches a filter, the normal request lifecycle stops. A filter can be bound at route, controller, or global scope.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/exception-filters",
+      "https://docs.nestjs.com/faq/request-lifecycle"
+    ]
+  },
+  {
+    "question": "What is the NestJS request lifecycle from middleware through response, and where do exception filters fit?",
+    "shortAnswer": "A normal request passes through middleware, guards, inbound interceptors, pipes, and the handler, then returns through interceptors; filters handle uncaught exceptions.",
+    "longAnswer": "Nest runs middleware first, then guards, inbound interceptors, and pipes before calling the controller handler and any service it uses. On a successful response, interceptors unwind in reverse order. Exception filters are not a normal success-path stage: an uncaught exception skips the remaining lifecycle and is handled by the applicable filter. Knowing this order helps place logging, authorization, validation, response mapping, and error formatting in the right component.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/faq/request-lifecycle"
+    ]
+  },
+  {
+    "question": "What provider scopes does NestJS support, and what are the trade-offs of request-scoped providers?",
+    "shortAnswer": "Nest supports singleton, request, and transient scopes; request scope creates an instance per request and can make dependent providers request-scoped too.",
+    "longAnswer": "Singleton scope is the default and shares one provider instance across the application. Request scope creates an instance for each incoming request, while transient scope gives each consumer its own instance. Request scope is useful when a dependency needs request-specific state, but that scope bubbles up the dependency chain, so controllers depending on it also become request-scoped. Prefer the default singleton scope unless per-request instances solve a concrete need.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/injection-scopes"
+    ]
+  },
+  {
+    "question": "When does NestJS call module and application lifecycle hooks, and how can they support startup or shutdown work?",
+    "shortAnswer": "Lifecycle hooks run at defined points during initialization, bootstrap, or shutdown, so providers can prepare resources or clean them up.",
+    "longAnswer": "A provider can implement hooks such as onModuleInit() or onApplicationBootstrap() to run after its module dependencies are ready or after all modules have initialized. Shutdown hooks such as onModuleDestroy() and onApplicationShutdown() let providers close resources when the app closes; handling process signals also requires enabling shutdown hooks. For example, a service can initialize a client during startup and release it during shutdown instead of doing that work for every request.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/lifecycle-events"
+    ]
+  },
+  {
+    "question": "How would you unit-test a NestJS controller or provider with TestingModule?",
+    "shortAnswer": "Create and compile a TestingModule with the class and its dependencies, then retrieve the instance and replace external providers with test doubles.",
+    "longAnswer": "Test.createTestingModule() builds a small Nest dependency-injection container from the controllers and providers under test. Await compile(), retrieve static instances with get(), and use overrideProvider() or a custom useValue provider to replace a database or other external dependency. A controller unit test can then assert its behavior with a mocked service without starting an HTTP server or connecting to the real database.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/testing"
+    ]
+  },
+  {
+    "question": "How do you write an end-to-end test for a NestJS HTTP endpoint?",
+    "shortAnswer": "Build a TestingModule around the relevant application module, create a Nest application, send HTTP requests, and assert the responses.",
+    "longAnswer": "An end-to-end test exercises multiple classes and modules together through the HTTP boundary. Create a TestingModule that imports the application or feature module, override providers that should not reach real external systems, then create and initialize a Nest application. Use an HTTP client such as Supertest to call a route and assert its status and response body, and close the app after the test. This checks integration behavior that an isolated controller unit test does not cover.",
+    "category": "NestJS",
+    "referenceUrls": [
+      "https://docs.nestjs.com/fundamentals/testing"
+    ]
+  },
+  {
     "question": "Why can a mutable default argument retain state across calls, and how should a function avoid unwanted sharing?",
     "shortAnswer": "Default values are evaluated once when the function is defined, so a mutable default is reused across calls. Use a None sentinel and create a new value inside the function.",
     "longAnswer": "Python evaluates a function’s default argument expressions when the def statement runs, not each time the function is called. If that default is a list or dictionary and the function mutates it, later calls see the same object and its accumulated state. When that sharing is unintended, use None as the default and allocate a fresh collection inside the function; shared state can still be intentional when documented.",
