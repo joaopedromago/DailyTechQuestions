@@ -138,6 +138,16 @@
     ]
   },
   {
+    "question": "What is the difference between synchronous and asynchronous code?",
+    "shortAnswer": "A synchronous operation finishes before its caller continues. An asynchronous operation lets the caller continue and delivers its result later, for example through a callback or a promise.",
+    "longAnswer": "For example, a synchronous file read returns its data before the next statement runs and blocks the calling thread while it waits. An asynchronous read can return a promise so the runtime can handle other work while the file is being read. Await suspends the rest of the current async function until the promise settles; it leaves the thread available for other work. Marking a function async does not move its synchronous calculations to a different thread.",
+    "category": "Javascript",
+    "referenceUrls": [
+      "https://nodejs.org/learn/asynchronous-work/overview-of-blocking-vs-non-blocking",
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+    ]
+  },
+  {
     "question": "How do promises and the event loop affect async code order?",
     "shortAnswer": "Synchronous code runs on the current stack; promise reactions run as microtasks after that stack, while scheduled tasks such as timers run through task queues. Exact ordering across host APIs depends on the runtime.",
     "longAnswer": "Synchronous statements run first; after the current stack finishes, Promise reactions run as microtasks before a timer task in the usual event-loop turn. For example, logging A, scheduling Promise.resolve().then(() => log B), scheduling setTimeout(() => log C, 0), then logging D gives A, D, B, C in a typical browser or Node turn. The runtime can differ around other host APIs, and a timer has a minimum delay rather than an exact start time. Promises coordinate asynchronous work; CPU-heavy JavaScript still blocks the event loop unless moved elsewhere.",
@@ -514,6 +524,16 @@
     ]
   },
   {
+    "question": "What is Node.js, and how is it different from JavaScript?",
+    "shortAnswer": "JavaScript is the language; Node.js is a runtime that executes it outside the browser and provides APIs for tasks such as file access and networking.",
+    "longAnswer": "JavaScript defines language features such as functions, objects, and promises. Node.js uses the V8 engine to execute that language and supplies host APIs such as node:fs for reading files and node:http for serving requests. Browsers run the same language but provide different host APIs, such as the DOM. For example, a function that formats a string can usually run in both environments, while a script that calls node:fs depends on Node.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/learn/getting-started/introduction-to-nodejs",
+      "https://nodejs.org/learn/getting-started/differences-between-nodejs-and-the-browser"
+    ]
+  },
+  {
     "question": "How can Node.js serve many I/O requests while JavaScript runs on one main thread?",
     "shortAnswer": "The event loop runs JavaScript callbacks while the runtime and operating system handle asynchronous I/O; callbacks are scheduled when work completes. A long synchronous callback still blocks other JavaScript work on that event loop.",
     "longAnswer": "Node runs JavaScript callbacks on an event loop while the runtime and operating system handle supported asynchronous I/O. For example, while one database query waits for a response, Node can service another request; the completed query later schedules its callback. This supports many waiting requests with modest thread overhead, but a long synchronous JSON parse or computation blocks other callbacks on that event loop. Use workers or another process for measured CPU-heavy work rather than assuming async I/O makes JavaScript computation parallel.",
@@ -534,6 +554,17 @@
     ]
   },
   {
+    "question": "What blocks the Node.js event loop, and how would you diagnose it?",
+    "shortAnswer": "Long JavaScript callbacks and synchronous APIs can delay everything scheduled on the same event loop. Measure loop delay and profile the slow path to find the work responsible.",
+    "longAnswer": "Examples include a large JSON.parse call, a regular expression with excessive backtracking, and a synchronous file read. Each can keep other callbacks, timers, and requests waiting even when the enclosing handler is async. Under representative load, sample event loop delay with monitorEventLoopDelay() and use a CPU profile to find expensive JavaScript; inspect synchronous I/O separately if CPU usage is low. Bound input sizes and replace synchronous I/O on request paths with asynchronous APIs where possible.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/learn/asynchronous-work/dont-block-the-event-loop",
+      "https://nodejs.org/api/perf_hooks.html#perf_hooksmonitoreventloopdelayoptions",
+      "https://nodejs.org/learn/getting-started/profiling"
+    ]
+  },
+  {
     "question": "How would you handle CPU-heavy work in a Node service?",
     "shortAnswer": "First measure it. Move substantial CPU-bound work to worker threads, a separate process/service, or a queue while keeping the request path bounded; ordinary asynchronous I/O does not offload JavaScript computation.",
     "longAnswer": "Measure the CPU cost and isolate work that materially blocks request handling. A worker thread can perform a bounded image transform while the event loop keeps serving requests; a queue or separate service fits longer jobs and operational isolation. Workers add transfer, memory, scheduling, and failure-management costs, so use a pool rather than starting one per request. Ordinary network and database I/O already have asynchronous paths and usually do not benefit from worker threads.",
@@ -544,12 +575,41 @@
     ]
   },
   {
+    "question": "What are streams in Node.js, and when would you use them?",
+    "shortAnswer": "Streams read, write, or transform data in chunks. They are useful for large files and network bodies because processing can start before the entire input is available.",
+    "longAnswer": "A Readable produces chunks, a Writable consumes them, a Duplex can do both, and a Transform is a Duplex whose output is derived from its input. For example, connect a file read stream to gzip and then a file write stream with pipeline() to compress a large archive without loading the entire file into memory. The pipeline manages backpressure and reports failures, so callers can handle completion and errors in one place.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/stream.html",
+      "https://nodejs.org/learn/modules/how-to-use-streams"
+    ]
+  },
+  {
+    "question": "How do worker_threads and child_process differ in Node.js?",
+    "shortAnswer": "Worker threads run JavaScript in parallel inside one process and can share selected memory. Child processes run separately and communicate over channels such as pipes or IPC.",
+    "longAnswer": "Each worker has its own JavaScript execution environment and can exchange messages, transfer an ArrayBuffer, or explicitly share bytes through a SharedArrayBuffer. A child process has its own address space; spawn() can run an external executable, and fork() starts a separate Node.js process with a built-in IPC channel. Use a worker pool for repeated CPU-heavy JavaScript when sharing or transferring data helps. Use a child process when you need an external program or stronger process isolation.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/worker_threads.html",
+      "https://nodejs.org/api/child_process.html"
+    ]
+  },
+  {
     "question": "What is stream backpressure, and why does it matter?",
     "shortAnswer": "Streams let data flow incrementally. A writable stream's write() can signal that the producer should pause; waiting for capacity to drain keeps a fast producer from overwhelming memory or a slower destination.",
     "longAnswer": "Backpressure is the signal that a consumer cannot keep up with a producer. In a Node writable stream, write() returning false means the producer should pause until drain, while pipe or pipeline coordinates this flow for common cases. Streaming a large export uses bounded memory because chunks are not accumulated faster than the destination can accept them. The trade-off is more lifecycle and error handling than buffering a small payload, but ignoring backpressure can grow memory without bound.",
     "category": "Node",
     "referenceUrls": [
       "https://nodejs.org/api/stream.html"
+    ]
+  },
+  {
+    "question": "What is a Buffer in Node.js?",
+    "shortAnswer": "A Buffer is a fixed-length sequence of bytes in Node.js. It extends Uint8Array and is commonly used for binary data from files or sockets.",
+    "longAnswer": "A Buffer stores bytes directly, so it can hold image data or a network packet without interpreting the bytes as text. To work with text, specify an encoding: Buffer.from('hello', 'utf8') encodes the string into bytes, and buf.toString('utf8') decodes them again. A string's length counts UTF-16 code units; the Buffer length counts bytes, so the lengths can differ for non-ASCII text.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/buffer.html"
     ]
   },
   {
@@ -563,6 +623,16 @@
     ]
   },
   {
+    "question": "What is middleware in Express?",
+    "shortAnswer": "Express middleware is a function in the request and response chain. It can inspect or change req and res, send a response, or call next() to continue.",
+    "longAnswer": "Express runs matching middleware in registration order. For example, mount a logger with app.use() before the routes so it can record each request and call next(). A middleware that rejects a request can send a response without calling next(), which keeps later handlers from running. If it neither completes the response nor passes control, the request hangs.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://expressjs.com/en/5x/guide/using-middleware/",
+      "https://expressjs.com/en/5x/guide/writing-middleware/"
+    ]
+  },
+  {
     "question": "How do you handle asynchronous errors in a request handler?",
     "shortAnswer": "Make the framework boundary await the handler or explicitly forward rejections to centralized error middleware. Classify expected validation/auth/not-found errors separately from unexpected failures; log a safe correlation ID and return a stable response.",
     "longAnswer": "A request framework must await an async handler or forward its rejection into centralized error handling. Map expected validation or missing-resource errors to stable client responses, and log unexpected failures with a correlation ID while returning a generic server error. For example, a rejected database query should reach the error boundary rather than become an unhandled rejection. Centralization makes responses consistent, but handlers still need local recovery when they can meaningfully continue; never put stack traces or secrets in client responses.",
@@ -570,6 +640,26 @@
     "referenceUrls": [
       "https://nodejs.org/api/errors.html",
       "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html"
+    ]
+  },
+  {
+    "question": "How would you investigate a memory leak in a Node.js application?",
+    "shortAnswer": "Reproduce the growth under steady load, track heap and process memory, and compare heap snapshots to find objects that remain reachable.",
+    "longAnswer": "Start after warm-up and watch process.memoryUsage() across repeated runs of the suspect operation. A rising heapUsed baseline after garbage collection suggests retained JavaScript objects; rising external or arrayBuffers memory can point to buffers or native allocations, so RSS alone does not prove a JavaScript leak. Compare snapshots taken before and after the repeated work and inspect retaining paths to see whether a cache, listener, or other reference keeps objects alive. Capture snapshots on a test or spare instance because they pause the main thread and can use enough memory to crash the process.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://nodejs.org/api/process.html#processmemoryusage",
+      "https://nodejs.org/learn/diagnostics/memory/using-heap-snapshot"
+    ]
+  },
+  {
+    "question": "What is the difference between dependencies and devDependencies in npm?",
+    "shortAnswer": "In npm, dependencies are packages needed to run the application or consume the package. devDependencies are tools needed to develop, build, or test it.",
+    "longAnswer": "An HTTP framework imported by a running server belongs in dependencies, while a linter or test runner usually belongs in devDependencies. A development install normally includes both groups. A production install with npm ci --omit=dev leaves development-only packages out of node_modules. If a compiler is a development dependency, install it in the build stage and make sure the compiled output can run with only the production dependencies.",
+    "category": "Node",
+    "referenceUrls": [
+      "https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#devdependencies",
+      "https://docs.npmjs.com/cli/v11/commands/npm-ci/#omit"
     ]
   },
   {
