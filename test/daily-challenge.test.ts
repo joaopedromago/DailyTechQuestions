@@ -1,4 +1,5 @@
 import {
+  areDailySettingsValid,
   buildCalendarMonth,
   EMPTY_DAILY_STUDY,
   getCalendarDayStatus,
@@ -58,6 +59,32 @@ it('earns one credit per finished day and freezes across an unlimited gap', () =
   expect(status(today)).toBe('completed');
   expect(status('2026-11-24')).toBe('neutral');
   expect(getCalendarDayStatus(today, today, new Set(), undefined)).toBe('today');
+});
+
+it('uses saved category and count choices for new challenges and preserves an active challenge', () => {
+  const today = '2026-11-23';
+  const tomorrow = '2026-11-24';
+  const active = reviewDailyQuestion(startDailySession(EMPTY_DAILY_STUDY, today), today, 0);
+  const configured = {
+    ...active,
+    settings: { selectedCategories: ['Python'], questionCount: 1 },
+  };
+  expect(startDailySession(configured, today)).toBe(configured);
+  expect(reviewDailyQuestion(configured, today, 1).session?.reviewedCount).toBe(2);
+
+  const next = startDailySession(configured, tomorrow);
+  expect(next.session?.questions.map(({ category }) => category)).toEqual(['Python']);
+  expect(reviewDailyQuestion(next, tomorrow, 0).completedDays).toEqual([tomorrow]);
+});
+
+it('requires at least one catalog category and a whole count within the selection', () => {
+  expect(areDailySettingsValid({ selectedCategories: [], questionCount: 1 })).toBe(false);
+  expect(areDailySettingsValid({ selectedCategories: ['Python'], questionCount: 0 })).toBe(false);
+  expect(areDailySettingsValid({ selectedCategories: ['Python'], questionCount: 1.5 })).toBe(false);
+  expect(areDailySettingsValid({ selectedCategories: ['Python'], questionCount: 10_000 })).toBe(
+    false,
+  );
+  expect(areDailySettingsValid({ selectedCategories: ['Python'], questionCount: 1 })).toBe(true);
 });
 
 it('lays out the correct dates across month, year, and leap-day boundaries', () => {

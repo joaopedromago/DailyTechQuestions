@@ -1,8 +1,17 @@
-import { questionCategories, type Question } from '@/data/questions';
+import { questionCategories, questions, type Question } from '@/data/questions';
 import { createQuizQuestions } from '@/features/quiz/quiz-utils';
 
-export const DAILY_QUESTION_COUNT = 5;
 export const REMINDER_HOUR = 22;
+
+export type DailyChallengeSettings = {
+  selectedCategories: readonly string[];
+  questionCount: number;
+};
+
+export const DEFAULT_DAILY_SETTINGS: DailyChallengeSettings = {
+  selectedCategories: questionCategories,
+  questionCount: 5,
+};
 
 export type DailySession = {
   day: string;
@@ -14,13 +23,33 @@ export type DailyStudyData = {
   completedDays: string[];
   session: DailySession | null;
   remindersEnabled: boolean;
+  settings: DailyChallengeSettings;
 };
 
 export const EMPTY_DAILY_STUDY: DailyStudyData = {
   completedDays: [],
   session: null,
   remindersEnabled: false,
+  settings: DEFAULT_DAILY_SETTINGS,
 };
+
+export function getDailyQuestionLimit(categories: readonly string[]) {
+  const selected = new Set(categories);
+  return questions.filter(({ category }) => selected.has(category)).length;
+}
+
+export function areDailySettingsValid({
+  selectedCategories,
+  questionCount,
+}: DailyChallengeSettings) {
+  return (
+    selectedCategories.length > 0 &&
+    selectedCategories.every((category) => questionCategories.includes(category)) &&
+    Number.isInteger(questionCount) &&
+    questionCount >= 1 &&
+    questionCount <= getDailyQuestionLimit(selectedCategories)
+  );
+}
 
 export function localDayKey(date: Date) {
   return [
@@ -52,10 +81,8 @@ export function getDailySession(data: DailyStudyData, day: string) {
 export function startDailySession(data: DailyStudyData, day: string): DailyStudyData {
   if (data.completedDays.includes(day) || getDailySession(data, day)) return data;
 
-  const questions = createQuizQuestions(questionCategories, DAILY_QUESTION_COUNT);
-  if (questions.length !== DAILY_QUESTION_COUNT) {
-    throw new Error('The daily challenge requires five questions.');
-  }
+  const { selectedCategories, questionCount } = data.settings;
+  const questions = createQuizQuestions(selectedCategories, questionCount);
 
   return { ...data, session: { day, questions, reviewedCount: 0 } };
 }
@@ -71,7 +98,7 @@ export function reviewDailyQuestion(
   }
 
   const reviewedCount = position + 1;
-  if (reviewedCount === DAILY_QUESTION_COUNT) {
+  if (reviewedCount === session.questions.length) {
     return {
       ...data,
       session: null,

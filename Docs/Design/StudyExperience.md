@@ -28,11 +28,16 @@ calendar. The first finished challenge starts the streak at one. Each later fini
 one. A missed date after the first completion freezes the streak automatically and does not reduce
 the total. The calendar marks completed dates and frozen dates, with earlier dates neutral.
 
-Starting a date's challenge samples five distinct questions from the full catalog. The app saves
+The settings gear opens **Daily Settings**. All question categories start selected, and the daily
+count defaults to five. Choose at least one category and a whole number from one through the
+number of questions in the selected categories. Saved settings apply to the next challenge started.
+
+Starting a date's challenge samples distinct questions from the selected categories. The app saves
 their order and progress on the device. Reveal the quick answer and select **Next** for each
-question, then **Finish** for question five. The full answer stays optional. Leaving the challenge
-pauses it, and the same set resumes during that date. At local midnight, unfinished progress expires
-and a fresh five-question challenge becomes available. Only the daily challenge awards a streak day.
+question, then **Finish** on the last one. The full answer stays optional. Leaving the challenge
+pauses it, and the same set resumes during that date even if settings change. At local midnight,
+unfinished progress expires and a new challenge becomes available. Only the daily challenge awards
+a streak day.
 
 The optional native **10 p.m. study reminder** starts off and requests device notification
 permission when turned on. It can remind the learner even on a day when they have yet to start.

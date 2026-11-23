@@ -29,6 +29,7 @@ export default function TabLayout() {
                   <Stack.Screen name="index" />
                   <Stack.Screen name="daily/index" />
                   <Stack.Screen name="daily/play" />
+                  <Stack.Screen name="daily/settings" />
                   <Stack.Screen name="questions" />
                   <Stack.Screen name="questions/[questionIndex]" />
                   <Stack.Screen name="quiz/setup" />

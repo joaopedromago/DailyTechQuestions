@@ -1,10 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-import type { Question } from '@/data/questions';
+import { questionCategories, type Question } from '@/data/questions';
 import { getQuestionCheckKey } from '@/features/questions/question-check-utils';
 
-import { DAILY_QUESTION_COUNT, EMPTY_DAILY_STUDY, type DailyStudyData } from './daily-challenge';
+import {
+  DEFAULT_DAILY_SETTINGS,
+  EMPTY_DAILY_STUDY,
+  getDailyQuestionLimit,
+  type DailyChallengeSettings,
+  type DailyStudyData,
+} from './daily-challenge';
 
 const STORAGE_KEY = 'study-experience.daily-challenge';
 
@@ -36,18 +42,35 @@ function parseSession(value: unknown): DailyStudyData['session'] {
     !isObject(value) ||
     !isDayKey(value.day) ||
     !Array.isArray(value.questions) ||
-    value.questions.length !== DAILY_QUESTION_COUNT ||
+    value.questions.length < 1 ||
     !value.questions.every(isQuestion) ||
-    new Set(value.questions.map(getQuestionCheckKey)).size !== DAILY_QUESTION_COUNT ||
+    new Set(value.questions.map(getQuestionCheckKey)).size !== value.questions.length ||
     typeof value.reviewedCount !== 'number' ||
     !Number.isInteger(value.reviewedCount) ||
     value.reviewedCount < 0 ||
-    value.reviewedCount >= DAILY_QUESTION_COUNT
+    value.reviewedCount >= value.questions.length
   ) {
     throw new Error('Invalid daily challenge session.');
   }
 
   return { day: value.day, questions: value.questions, reviewedCount: value.reviewedCount };
+}
+
+function parseSettings(value: unknown): DailyChallengeSettings {
+  if (!isObject(value) || !Array.isArray(value.selectedCategories)) return DEFAULT_DAILY_SETTINGS;
+
+  const savedCategories = new Set(value.selectedCategories);
+  const selectedCategories = questionCategories.filter((category) => savedCategories.has(category));
+  if (!selectedCategories.length) return DEFAULT_DAILY_SETTINGS;
+
+  const count =
+    Number.isInteger(value.questionCount) && typeof value.questionCount === 'number'
+      ? value.questionCount
+      : DEFAULT_DAILY_SETTINGS.questionCount;
+  return {
+    selectedCategories,
+    questionCount: Math.max(1, Math.min(count, getDailyQuestionLimit(selectedCategories))),
+  };
 }
 
 export async function loadDailyStudy(): Promise<DailyStudyData> {
@@ -57,7 +80,7 @@ export async function loadDailyStudy(): Promise<DailyStudyData> {
   const data: unknown = JSON.parse(serialized);
   if (
     !isObject(data) ||
-    data.version !== 1 ||
+    (data.version !== 1 && data.version !== 2) ||
     !Array.isArray(data.completedDays) ||
     !data.completedDays.every(isDayKey) ||
     typeof data.remindersEnabled !== 'boolean'
@@ -71,11 +94,12 @@ export async function loadDailyStudy(): Promise<DailyStudyData> {
     completedDays,
     session: session && !completedDays.includes(session.day) ? session : null,
     remindersEnabled: data.remindersEnabled,
+    settings: data.version === 1 ? DEFAULT_DAILY_SETTINGS : parseSettings(data.settings),
   };
 }
 
 export function saveDailyStudy(data: DailyStudyData) {
-  return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, ...data }));
+  return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, ...data }));
 }
 
 export function withDailyStudyLock<T>(work: () => Promise<T>): Promise<T> {

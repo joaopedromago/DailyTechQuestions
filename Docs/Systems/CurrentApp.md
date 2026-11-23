@@ -38,10 +38,12 @@ separately in AsyncStorage.
 
 `/daily` displays today's challenge, an opt-in native reminder toggle, and the streak calendar.
 `/daily/play` reuses the shared question view with sequential quick-answer review.
+`/daily/settings` edits the category selection and question count for new challenges.
 [`daily-study.tsx`](../../src/features/daily/daily-study.tsx) owns local date refresh and durable
 progress updates. [`daily-storage.ts`](../../src/features/daily/daily-storage.ts) stores the
-active question snapshot, completed local dates, and reminder preference separately from quiz
-history. [`daily-reminders.native.ts`](../../src/features/daily/daily-reminders.native.ts)
+active question snapshot, completed local dates, challenge settings, and reminder preference
+separately from quiz history. Version 1 records load with all categories and a daily count of five.
+[`daily-reminders.native.ts`](../../src/features/daily/daily-reminders.native.ts)
 reconciles date-based notification requests with the device's pending queue using stable
 identifiers and handles reminder taps locally.
 

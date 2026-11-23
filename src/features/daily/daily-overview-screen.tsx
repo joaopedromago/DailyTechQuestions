@@ -1,13 +1,15 @@
+import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { Platform, ScrollView } from 'react-native';
+import { Platform, ScrollView, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, ButtonText } from '@/components/shared/button';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
+import { getColorTokenHex } from '@/theme/color-tokens';
 
-import { DAILY_QUESTION_COUNT, getDailySession } from './daily-challenge';
+import { getDailySession } from './daily-challenge';
 import { useDailyStudy } from './daily-study';
 import { StreakCalendar } from './streak-calendar';
 
@@ -24,6 +26,12 @@ export default function DailyOverviewScreen() {
     reminderStatus,
     setReminders,
   } = useDailyStudy();
+  const systemTheme = useColorScheme();
+  const webTheme =
+    Platform.OS === 'web' && typeof document !== 'undefined'
+      ? document.documentElement.dataset.theme
+      : undefined;
+  const theme = (webTheme ?? systemTheme) === 'dark' ? 'dark' : 'light';
   const focused = useRef(false);
   useFocusEffect(
     useCallback(() => {
@@ -35,7 +43,9 @@ export default function DailyOverviewScreen() {
   );
   const session = getDailySession(data, today);
   const completed = data.completedDays.includes(today);
-  const reviewed = completed ? DAILY_QUESTION_COUNT : (session?.reviewedCount ?? 0);
+  const questionCount = session?.questions.length ?? data.settings.questionCount;
+  const reviewed = session?.reviewedCount ?? 0;
+  const progress = completed ? 100 : (100 * reviewed) / questionCount;
   const statusMessage = {
     ready: null,
     blocked: 'Allow study notifications in your device settings to receive reminders.',
@@ -54,9 +64,25 @@ export default function DailyOverviewScreen() {
           >
             <ButtonText>Return to menu</ButtonText>
           </Button>
-          <Text role="heading" className="text-3xl font-bold text-foreground">
-            Daily Challenge
-          </Text>
+          <Box className="flex-row items-center justify-between gap-3">
+            <Text role="heading" className="flex-1 text-3xl font-bold text-foreground">
+              Daily Challenge
+            </Text>
+            <Button
+              accessibilityLabel="Daily settings"
+              className="min-h-11 min-w-11 shrink-0"
+              size="icon"
+              variant="outline"
+              onPress={() => router.push('/daily/settings')}
+            >
+              <MaterialIcons
+                name="settings"
+                size={20}
+                color={getColorTokenHex(theme, '--foreground')}
+                aria-hidden
+              />
+            </Button>
+          </Box>
           {loading || loadError ? (
             <Box className="gap-3">
               <Text role={loadError ? 'alert' : undefined} className="text-muted-foreground">
@@ -83,20 +109,17 @@ export default function DailyOverviewScreen() {
                   <Text className="text-base font-bold text-foreground">
                     {completed ? 'Completed today' : 'Today’s challenge'}
                   </Text>
-                  <Text className="text-sm text-muted-foreground">
-                    {reviewed + ' of ' + DAILY_QUESTION_COUNT + ' reviewed'}
-                  </Text>
+                  {!completed ? (
+                    <Text className="text-sm text-muted-foreground">
+                      {reviewed + ' of ' + questionCount + ' reviewed'}
+                    </Text>
+                  ) : null}
                 </Box>
-                <Box className="flex-row gap-1.5" aria-hidden>
-                  {Array.from({ length: DAILY_QUESTION_COUNT }, (_, position) => (
-                    <Box
-                      key={position}
-                      className={
-                        'h-1.5 flex-1 rounded-full ' +
-                        (position < reviewed ? 'bg-primary' : 'bg-secondary')
-                      }
-                    />
-                  ))}
+                <Box className="h-1.5 overflow-hidden rounded-full bg-secondary" aria-hidden>
+                  <Box
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${progress}%` }}
+                  />
                 </Box>
                 {!completed ? (
                   <Button

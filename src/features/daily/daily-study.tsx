@@ -11,12 +11,14 @@ import {
 import { AppState, Platform } from 'react-native';
 
 import {
+  areDailySettingsValid,
   EMPTY_DAILY_STUDY,
   getDailySession,
   localDayKey,
   nextLocalMidnight,
   reviewDailyQuestion,
   startDailySession,
+  type DailyChallengeSettings,
   type DailyStudyData,
 } from './daily-challenge';
 import {
@@ -46,6 +48,7 @@ const DailyStudyContext = createContext<{
   start: (day: string) => Promise<boolean>;
   review: (day: string, position: number) => Promise<boolean>;
   setReminders: (enabled: boolean) => Promise<void>;
+  saveSettings: (settings: DailyChallengeSettings) => Promise<boolean>;
 } | null>(null);
 
 function clockInfo(now: Date) {
@@ -279,6 +282,10 @@ export function DailyStudyProvider({ children }: { children: ReactNode }) {
         start,
         review,
         setReminders,
+        saveSettings: (settings) =>
+          areDailySettingsValid(settings)
+            ? update((current) => ({ ...current, settings }))
+            : Promise.resolve(false),
       }}
     >
       {children}

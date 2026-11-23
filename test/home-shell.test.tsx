@@ -110,6 +110,7 @@ jest.mock('@/components/ui/button', () => {
     Button: ({
       accessibilityLabel,
       accessibilityRole = 'button',
+      role,
       accessibilityState,
       children,
       className: _className,
@@ -122,7 +123,7 @@ jest.mock('@/components/ui/button', () => {
         Pressable,
         {
           accessibilityLabel,
-          accessibilityRole,
+          accessibilityRole: role ?? accessibilityRole,
           accessibilityState: { ...accessibilityState, disabled: isDisabled },
           disabled: isDisabled,
           onPress,
@@ -171,7 +172,12 @@ jest.mock('@/features/quiz/quiz-session', () => ({
 }));
 jest.mock('@/features/daily/daily-study', () => ({
   useDailyStudy: () => ({
-    data: { completedDays: [], session: null, remindersEnabled: false },
+    data: {
+      completedDays: [],
+      session: null,
+      remindersEnabled: false,
+      settings: { selectedCategories: [], questionCount: 5 },
+    },
     today: '2026-11-23',
     loading: false,
     loadError: false,

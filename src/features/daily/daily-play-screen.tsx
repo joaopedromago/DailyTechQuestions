@@ -6,7 +6,7 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { QuestionDetailView } from '@/features/questions/question-detail-view';
 
-import { DAILY_QUESTION_COUNT, getDailySession } from './daily-challenge';
+import { getDailySession } from './daily-challenge';
 import { useDailyStudy } from './daily-study';
 
 export default function DailyPlayScreen() {
@@ -51,6 +51,7 @@ export default function DailyPlayScreen() {
   }
 
   const position = session.reviewedCount;
+  const questionCount = session.questions.length;
   const advance = () => void review(session.day, position);
   const questionKey = session.day + '-' + position;
 
@@ -59,10 +60,10 @@ export default function DailyPlayScreen() {
       key={questionKey}
       disclosureKey={questionKey}
       mode="daily"
-      positionLabel={'Question ' + (position + 1) + ' of ' + DAILY_QUESTION_COUNT}
+      positionLabel={'Question ' + (position + 1) + ' of ' + questionCount}
       question={session.questions[position]}
       isAdvancing={busy}
-      isLastQuestion={position === DAILY_QUESTION_COUNT - 1}
+      isLastQuestion={position === questionCount - 1}
       progressSaveError={saveError}
       onNext={advance}
       onFinish={advance}
