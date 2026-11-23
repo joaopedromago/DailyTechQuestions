@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { DailyReminderNavigation, DailyStudyProvider } from '@/features/daily/daily-study';
 import { QuestionChecksProvider } from '@/features/questions/question-checks';
 import { QuizSessionProvider } from '@/features/quiz/quiz-session';
 
@@ -22,15 +23,20 @@ export default function TabLayout() {
         <SafeAreaProvider>
           <QuizSessionProvider>
             <QuestionChecksProvider>
-              <AnimatedSplashOverlay />
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="questions" />
-                <Stack.Screen name="questions/[questionIndex]" />
-                <Stack.Screen name="quiz/setup" />
-                <Stack.Screen name="quiz/history" />
-                <Stack.Screen name="quiz/play" />
-              </Stack>
+              <DailyStudyProvider>
+                <AnimatedSplashOverlay />
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="daily/index" />
+                  <Stack.Screen name="daily/play" />
+                  <Stack.Screen name="questions" />
+                  <Stack.Screen name="questions/[questionIndex]" />
+                  <Stack.Screen name="quiz/setup" />
+                  <Stack.Screen name="quiz/history" />
+                  <Stack.Screen name="quiz/play" />
+                </Stack>
+                <DailyReminderNavigation />
+              </DailyStudyProvider>
             </QuestionChecksProvider>
           </QuizSessionProvider>
         </SafeAreaProvider>

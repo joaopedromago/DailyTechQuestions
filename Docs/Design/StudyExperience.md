@@ -12,13 +12,34 @@ Computer Science, AI Tools, System Design, Backend, and JavaScript code-output q
 not ask learners to submit answers, grade responses, award points, or compete. Questions can be
 reviewed alone or discussed with another person.
 
-The home menu presents four actions: **Start Random Quiz**, **View Questions**, **Continue**, and
-**History**. Continue remains disabled until history hydration completes and opens the newest-created
-quiz record. History is always available and lists saved records.
+The home menu shows a **Daily Challenge** card with today's progress and the total streak. It also
+offers **Start Random Quiz**, **View Questions**, **Continue**, and **History**. Continue remains
+disabled until history hydration completes and opens the newest-created quiz record. History is
+always available and lists saved records.
 
 The menu also offers a light/dark appearance toggle that switches to the other appearance. Use a
 Material Icon to identify the mode action and expose its target appearance in the accessible
 label.
+
+## Daily challenge and streak
+
+The overview opens from the home card and shows today's status, the total streak, and a monthly
+calendar. The first finished challenge starts the streak at one. Each later finished local date adds
+one. A missed date after the first completion freezes the streak automatically and does not reduce
+the total. The calendar marks completed dates and frozen dates, with earlier dates neutral.
+
+Starting a date's challenge samples five distinct questions from the full catalog. The app saves
+their order and progress on the device. Reveal the quick answer and select **Next** for each
+question, then **Finish** for question five. The full answer stays optional. Leaving the challenge
+pauses it, and the same set resumes during that date. At local midnight, unfinished progress expires
+and a fresh five-question challenge becomes available. Only the daily challenge awards a streak day.
+
+The optional native **10 p.m. study reminder** starts off and requests device notification
+permission when turned on. It can remind the learner even on a day when they have yet to start.
+Finishing cancels the reminder for that date, and tapping a reminder opens today's overview. The
+app keeps a rolling queue of up to 30 local reminders. They can arrive offline, and reopening the
+app refreshes the window and adjusts it to the current time zone. Android may deliver them late
+under battery restrictions. The web app supports the challenge and calendar.
 
 ## Random quiz
 

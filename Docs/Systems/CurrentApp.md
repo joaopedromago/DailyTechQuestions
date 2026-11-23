@@ -8,10 +8,12 @@ This document describes the current app shell and data ownership. Study behavior
 The project uses Expo SDK 58, React Native, TypeScript, and Expo Router. The root layout in
 [`src/app/_layout.tsx`](../../src/app/_layout.tsx) imports the global stylesheet and wraps the route
 stack with the Expo Router theme provider, gluestack provider, safe-area provider, quiz-session
-provider, and question-check provider. It retains the configured animated splash overlay.
+provider, question-check provider, and daily study provider. It retains the configured animated
+splash overlay.
 
-[`src/app/index.tsx`](../../src/app/index.tsx) displays the study menu: Start Random Quiz, View
-Questions, Continue, and History. Continue becomes enabled after history hydration when a quiz
+[`src/app/index.tsx`](../../src/app/index.tsx) displays the Daily Challenge card and the study
+menu actions Start Random Quiz, View Questions, Continue, and History. Continue becomes enabled
+after history hydration when a quiz
 record exists and opens the newest-created record. The menu also toggles between light and dark
 appearance and uses a Material Icon to identify the target mode. Native platforms use the React
 Native appearance setting; web records the current selection on the document root so it remains
@@ -33,6 +35,15 @@ than clears the record. [`question-checks.tsx`](../../src/features/questions/que
 owns the checked-question set, and
 [`question-check-storage.ts`](../../src/features/questions/question-check-storage.ts) persists it
 separately in AsyncStorage.
+
+`/daily` displays today's challenge, an opt-in native reminder toggle, and the streak calendar.
+`/daily/play` reuses the shared question view with sequential quick-answer review.
+[`daily-study.tsx`](../../src/features/daily/daily-study.tsx) owns local date refresh and durable
+progress updates. [`daily-storage.ts`](../../src/features/daily/daily-storage.ts) stores the
+active question snapshot, completed local dates, and reminder preference separately from quiz
+history. [`daily-reminders.native.ts`](../../src/features/daily/daily-reminders.native.ts)
+reconciles date-based notification requests with the device's pending queue using stable
+identifiers and handles reminder taps locally.
 
 Gluestack-generated components and provider configuration live in `src/components/ui/`. Shared
 application controls live in `src/components/shared/`; the button, input, checkbox, and dropdown

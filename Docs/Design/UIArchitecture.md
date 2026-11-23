@@ -35,13 +35,13 @@ areas, gestures, system back, and opening reference URLs.
   `src/components/shared/button/`, `src/components/shared/input/`,
   `src/components/shared/checkbox/`, and `src/components/shared/dropdown/`. Each control exposes
   deliberate variants and is reused by feature screens.
-- Keep study feature screens, behavior, and feature-specific hooks in `src/features/questions/` and
-  `src/features/quiz/`.
+- Keep study feature screens, behavior, and feature-specific hooks in `src/features/questions/`,
+  `src/features/quiz/`, and `src/features/daily/`.
 - Keep the static question catalog and its shared types in `src/data/`.
 
-The root layout owns the gluestack, quiz-session, and question-check providers. The home route
-presents the study menu; Expo Router routes compose feature screens for question browsing and quiz
-flows.
+The root layout owns the gluestack, quiz-session, question-check, and daily study providers. The
+home route presents the study menu. Expo Router routes compose feature screens for question
+browsing, quiz flows, and the daily challenge.
 
 ## State and persistence ownership
 

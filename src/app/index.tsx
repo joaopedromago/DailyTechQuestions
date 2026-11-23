@@ -1,12 +1,13 @@
 import { router, type Href } from 'expo-router';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
-import { Appearance, Platform, useColorScheme } from 'react-native';
+import { Appearance, Platform, ScrollView, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/shared/button';
 import { Text } from '@/components/ui/text';
+import { DailyChallengeCard } from '@/features/daily/daily-challenge-card';
 import { useQuizSession } from '@/features/quiz/quiz-session';
 
 export default function HomeScreen() {
@@ -24,7 +25,10 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1" style={{ flex: 1 }}>
-      <Box className="flex-1 justify-center bg-background px-6 py-8">
+      <ScrollView
+        className="bg-background"
+        contentContainerClassName="grow justify-center px-6 py-8"
+      >
         <Box className="mx-auto w-full max-w-xl gap-8">
           <Box className="gap-2">
             <Text role="heading" className="text-3xl font-bold leading-tight text-foreground">
@@ -56,6 +60,8 @@ export default function HomeScreen() {
               Switch to {targetColorScheme === 'dark' ? 'Dark' : 'Light'} mode
             </ButtonText>
           </Button>
+
+          <DailyChallengeCard />
 
           <Box className="gap-3">
             <Button
@@ -103,7 +109,7 @@ export default function HomeScreen() {
             ) : null}
           </Box>
         </Box>
-      </Box>
+      </ScrollView>
     </SafeAreaView>
   );
 }

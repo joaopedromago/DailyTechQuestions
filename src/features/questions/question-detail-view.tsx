@@ -27,11 +27,13 @@ import type { Href } from 'expo-router';
 type QuestionDetailViewProps = {
   question: Question;
   disclosureKey: string | number;
-  mode: 'browse' | 'quiz';
+  mode: 'browse' | 'quiz' | 'daily';
   positionLabel?: string;
   canGoPrevious?: boolean;
   canGoNext?: boolean;
   isLastQuestion?: boolean;
+  isAdvancing?: boolean;
+  progressSaveError?: boolean;
   onPrevious?: () => void;
   onNext?: () => void;
   onFinish?: () => void;
@@ -61,6 +63,8 @@ export function QuestionDetailView({
   canGoPrevious = false,
   canGoNext = false,
   isLastQuestion = false,
+  isAdvancing = false,
+  progressSaveError = false,
   onPrevious,
   onNext,
   onFinish,
@@ -128,26 +132,28 @@ export function QuestionDetailView({
     [onNext, onPrevious, onReturn],
   );
   const swipeHandlers =
-    Platform.OS === 'web'
-      ? {
-          onTouchStart: (event: GestureResponderEvent) => {
-            const touch = event.nativeEvent.changedTouches[0] ?? event.nativeEvent;
-            touchStart.current = { x: touch.pageX, y: touch.pageY };
-          },
-          onTouchEnd: (event: GestureResponderEvent) => {
-            const start = touchStart.current;
-            const touch = event.nativeEvent.changedTouches[0] ?? event.nativeEvent;
-            touchStart.current = null;
-            if (start) {
-              handleQuestionSwipe(touch.pageX - start.x, touch.pageY - start.y, {
-                onPrevious,
-                onNext,
-                onReturn,
-              });
-            }
-          },
-        }
-      : panResponder.panHandlers;
+    mode === 'daily'
+      ? {}
+      : Platform.OS === 'web'
+        ? {
+            onTouchStart: (event: GestureResponderEvent) => {
+              const touch = event.nativeEvent.changedTouches[0] ?? event.nativeEvent;
+              touchStart.current = { x: touch.pageX, y: touch.pageY };
+            },
+            onTouchEnd: (event: GestureResponderEvent) => {
+              const start = touchStart.current;
+              const touch = event.nativeEvent.changedTouches[0] ?? event.nativeEvent;
+              touchStart.current = null;
+              if (start) {
+                handleQuestionSwipe(touch.pageX - start.x, touch.pageY - start.y, {
+                  onPrevious,
+                  onNext,
+                  onReturn,
+                });
+              }
+            },
+          }
+        : panResponder.panHandlers;
 
   return (
     <SafeAreaView className="flex-1" style={{ flex: 1 }}>
@@ -155,13 +161,25 @@ export function QuestionDetailView({
         <ScrollView contentContainerClassName="gap-5 px-5 py-6">
           <Box className="gap-3">
             <Button
-              accessibilityLabel={mode === 'browse' ? 'Return to list' : 'Return to menu'}
+              accessibilityLabel={
+                mode === 'browse'
+                  ? 'Return to list'
+                  : mode === 'daily'
+                    ? 'Back to challenge'
+                    : 'Return to menu'
+              }
               className="self-start"
               size="sm"
               variant="ghost"
               onPress={onReturn}
             >
-              <ButtonText>{mode === 'browse' ? 'Return to list' : 'Return to menu'}</ButtonText>
+              <ButtonText>
+                {mode === 'browse'
+                  ? 'Return to list'
+                  : mode === 'daily'
+                    ? 'Back to challenge'
+                    : 'Return to menu'}
+              </ButtonText>
             </Button>
             {positionLabel ? (
               mode === 'quiz' ? (
@@ -214,6 +232,11 @@ export function QuestionDetailView({
                 {questionChecksLoadError
                   ? 'Saved question check status could not be loaded.'
                   : 'Question check status could not be saved.'}
+              </Text>
+            ) : null}
+            {progressSaveError ? (
+              <Text role="alert" className="text-sm text-destructive">
+                Your progress could not be saved. Try again.
               </Text>
             ) : null}
             <Text className="text-sm font-medium text-muted-foreground">
@@ -347,6 +370,11 @@ export function QuestionDetailView({
                 </Button>
               ) : null}
             </Box>
+          ) : null}
+          {mode === 'daily' && shortAnswerVisible ? (
+            <Button isDisabled={isAdvancing} onPress={isLastQuestion ? onFinish : onNext}>
+              <ButtonText>{isLastQuestion ? 'Finish' : 'Next'}</ButtonText>
+            </Button>
           ) : null}
         </ScrollView>
       </Box>

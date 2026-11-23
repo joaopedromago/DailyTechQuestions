@@ -169,6 +169,14 @@ jest.mock('@/components/external-link', () => {
 jest.mock('@/features/quiz/quiz-session', () => ({
   useQuizSession: jest.fn(),
 }));
+jest.mock('@/features/daily/daily-study', () => ({
+  useDailyStudy: () => ({
+    data: { completedDays: [], session: null, remindersEnabled: false },
+    today: '2026-11-23',
+    loading: false,
+    loadError: false,
+  }),
+}));
 jest.mock('@/features/questions/question-checks', () => ({
   useQuestionChecks: jest.fn(),
 }));
@@ -481,6 +489,36 @@ describe('study screens', () => {
       />,
     );
     expect(view.queryByText('Quick response.')).toBeNull();
+  });
+
+  it('opens the daily challenge and gates every step on the quick answer', async () => {
+    const home = await render(<HomeScreen />);
+    expect(home.getByText('0-day streak')).toBeTruthy();
+    await fireEvent.press(home.getByRole('button', { name: 'Open daily challenge' }));
+    expect(router.push).toHaveBeenCalledWith('/daily');
+    await home.unmount();
+
+    const onNext = jest.fn();
+    const onFinish = jest.fn();
+    const props = {
+      mode: 'daily' as const,
+      question: questions[0],
+      canGoNext: true,
+      onNext,
+      onFinish,
+      onReturn: jest.fn(),
+    };
+    const view = await render(<QuestionDetailView {...props} disclosureKey={0} />);
+    expect(view.queryByRole('button', { name: /next/i })).toBeNull();
+    await fireEvent.press(view.getByRole('button', { name: 'See answer' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Next' }));
+    expect(onNext).toHaveBeenCalledTimes(1);
+
+    await view.rerender(<QuestionDetailView {...props} disclosureKey={4} isLastQuestion />);
+    expect(view.queryByRole('button', { name: 'Finish' })).toBeNull();
+    await fireEvent.press(view.getByRole('button', { name: 'See answer' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Finish' }));
+    expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
   it('shows and toggles the persisted check icon beside the quiz question counter only', async () => {

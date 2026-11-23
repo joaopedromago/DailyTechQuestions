@@ -2,7 +2,7 @@
   "expo": {
     "name": "iwanttobereadyforinterview",
     "slug": "iwanttobereadyforinterview",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "iwanttobereadyforinterview",
@@ -35,7 +35,13 @@
           "imageWidth": 76
         }
       ],
-      "@react-native-vector-icons/material-icons"
+      "@react-native-vector-icons/material-icons",
+      [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
