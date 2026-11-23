@@ -433,6 +433,29 @@
     ]
   },
   {
+    "question": "How would you compare previous and current props or state in a React function component while avoiding an extra render?",
+    "shortAnswer": "Keep the previous value in a ref. In an Effect, compare the stored value with the current value, then update the ref.",
+    "longAnswer": "For example, keep the last committed projectId in a ref. An Effect that depends on projectId can skip the comparison on mount, compare the next value with the stored one, and then save the new value. Read and write the ref inside the Effect to keep the comparison tied to committed updates. Updating a ref adds no render, while calling a state setter from the Effect to save each changed value schedules another render. If the previous value belongs on screen, store it in state as part of the update that changes the current value.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/useRef",
+      "https://react.dev/reference/react/useEffect",
+      "https://react.dev/reference/react/useState"
+    ]
+  },
+  {
+    "question": "How would you dismiss a React modal on an outside click while keeping clicks inside from dismissing it?",
+    "shortAnswer": "Handle the backdrop and dismiss only when the pointer gesture starts and ends outside the dialog. For document-wide detection, use a dialog ref to identify inside targets.",
+    "longAnswer": "For a backdrop that wraps the dialog, event.target === event.currentTarget distinguishes an ordinary backdrop click from one that bubbles up from inside. A drag starting inside and ending outside can also produce a click targeted at the backdrop, so check both ends of the same pointer gesture before dismissing. Use hit testing if pointer capture changes the event target. If clicks elsewhere need to count, attach listeners to the dialog's ownerDocument while it is open and remove them in Effect cleanup. Use dialog.contains(target) for DOM targets and include separately portaled controls that should count as inside.",
+    "category": "React",
+    "referenceUrls": [
+      "https://dom.spec.whatwg.org/#dom-node-contains",
+      "https://react.dev/reference/react-dom/createPortal",
+      "https://react.dev/reference/react/useEffect",
+      "https://www.w3.org/TR/pointerevents3/#event-dispatch"
+    ]
+  },
+  {
     "question": "Why do list keys matter, and when can an index key cause a bug?",
     "shortAnswer": "A key lets React match an item with its prior identity as a list changes. Use a stable ID from the data so local state, focus, and DOM identity remain attached to the right item.",
     "longAnswer": "Keys tell React which list item corresponds to a previous item. With stable item IDs, inserting a new row at the start keeps each existing row's local state and focus with the same data. Index keys instead shift identities, so an input's draft text can appear on a different row after a reorder. Stable IDs require data-level identity; generating random keys on every render discards that identity and remounts items unnecessarily.",
@@ -460,6 +483,26 @@
     "referenceUrls": [
       "https://react.dev/learn/managing-state",
       "https://tanstack.com/query/latest/docs/framework/react/overview"
+    ]
+  },
+  {
+    "question": "How does a dispatched Redux action produce the next store state?",
+    "shortAnswer": "Once an action reaches the store, the store calls the root reducer with the current state and action, saves the returned state, and notifies subscribers.",
+    "longAnswer": "A UI handler might dispatch a taskCompleted action with a task ID. Configured middleware can inspect the action or run async work and dispatch further actions. When an action reaches the store, the root reducer runs synchronously and may delegate to slice reducers. The tasks reducer can return an updated tasks slice while other slices keep their existing values. Reducers calculate state without side effects, and subscribers are notified once the store holds the result.",
+    "category": "React",
+    "referenceUrls": [
+      "https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow",
+      "https://redux.js.org/api/store"
+    ]
+  },
+  {
+    "question": "How do Context updates and React Redux selectors determine which components re-render?",
+    "shortAnswer": "React compares a Context provider's value with Object.is and updates consumers when it changes. React Redux compares each useSelector result with its previous result, using strict equality by default.",
+    "longAnswer": "Suppose a Context provider supplies an object with theme and cartCount. A change to cartCount creates a new provider value and updates even consumers that only read theme. Splitting contexts by what changes together can narrow the update, and stabilizing the provider value prevents changes caused solely by recreating an equivalent object. A Redux component selecting only theme can skip the store-driven render when cartCount changes. Returning a fresh object from a selector defeats the default equality check, so select individual values or use a memoized selector for derived objects.",
+    "category": "React",
+    "referenceUrls": [
+      "https://react.dev/reference/react/useContext",
+      "https://redux.js.org/react-redux/api/hooks#equality-comparisons-and-updates"
     ]
   },
   {
@@ -501,6 +544,16 @@
     "referenceUrls": [
       "https://react.dev/reference/react/Suspense",
       "https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+    ]
+  },
+  {
+    "question": "How should the frontend handle an empty collection, a 204 No Content response, and an unexpectedly missing response body?",
+    "shortAnswer": "Show an empty state for a successful empty collection, skip parsing a 204 response, and treat a missing body as an error when the endpoint promises JSON.",
+    "longAnswer": "A 200 response with an empty JSON array can show No results or a first-use prompt once loading finishes. A documented 204 indicates success with no body, so a save can show confirmation without calling response.json(). If an endpoint promises a JSON body with its success status and the body is missing, surface a recoverable error and record the contract failure. Treating that failure as an empty collection would hide an API problem from both the user and the team.",
+    "category": "React",
+    "referenceUrls": [
+      "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5",
+      "https://fetch.spec.whatwg.org/#dom-body-json"
     ]
   },
   {
@@ -1161,6 +1214,16 @@
     "referenceUrls": [
       "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
       "https://opentelemetry.io/docs/languages/js/"
+    ]
+  },
+  {
+    "question": "Users report a production failure and the browser console is clean. How would you trace the failed action from the browser to the backend?",
+    "shortAnswer": "Reproduce the action with the browser Network panel open, then use the failing request's ID or a trace ID to find the corresponding gateway and backend records.",
+    "longAnswer": "Start with the reported steps, approximate time, and deployed version. Check whether the action sent a request, then inspect its status, timing, and response. If the browser sent nothing, investigate the client action and telemetry. If a request failed, look up the request ID or propagated trace in the gateway and service records, then follow it to the first failing dependency. For example, a gateway timeout may line up with a slow upstream span even when frontend code handled the error and logged nothing to the console. Without an ID, narrow the search by endpoint, time window, and release.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://developer.chrome.com/docs/devtools/network/",
+      "https://opentelemetry.io/docs/concepts/context-propagation/"
     ]
   },
   {
@@ -1829,12 +1892,32 @@
     ]
   },
   {
+    "question": "How would you model resources and their relationships in a REST API?",
+    "shortAnswer": "Identify the domain entities clients use, give them stable resource URLs, and represent relationships with shallow subcollections or links.",
+    "longAnswer": "For an order API, use /orders for the collection and /orders/123 for an individual order. Use /orders/123/items when clients access items in the context of their parent order. Link to /customers/42 when the customer has a lifecycle and URL of its own. A shallow hierarchy gives clients direct access to independent resources and lets the server change its storage layout without breaking public URLs.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#define-restful-web-api-resource-uris"
+    ]
+  },
+  {
     "question": "What are the roles of GET, POST, PUT, PATCH, and DELETE in an HTTP API?",
     "shortAnswer": "GET retrieves, POST submits or creates, PUT replaces a target resource, PATCH applies a partial change, and DELETE removes a target resource.",
     "longAnswer": "Use the HTTP method to express the requested operation: GET should be read-only; POST commonly creates a subordinate resource or triggers server-defined processing; PUT creates or replaces the representation at a known target URI; PATCH applies a partial modification; DELETE requests removal. GET, PUT, and DELETE have idempotent semantics, while POST and PATCH are not generally idempotent. An API can still make a particular POST or PATCH operation safe to retry with an idempotency key.",
     "category": "Backend",
     "referenceUrls": [
       "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods"
+    ]
+  },
+  {
+    "question": "How should the frontend decide what to show or retry after an HTTP error?",
+    "shortAnswer": "Map the status and the API's error details to a user action. Retry transient failures only when the request is safe to repeat.",
+    "longAnswer": "A 401 can start session recovery, and a 403 should explain the permission problem. Preserve input and show field errors for invalid data, and prompt the user to reconcile changes for a 409 conflict. On a 429, respect Retry-After if supplied. For a transient failure such as a 503, offer retry or use bounded backoff when repeating the request is safe. For example, a GET can usually be retried automatically, while an order submission needs a server-supported idempotency key or an equivalent guarantee before automatic retry.",
+    "category": "Backend",
+    "referenceUrls": [
+      "https://www.rfc-editor.org/rfc/rfc9110.html#section-15",
+      "https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2",
+      "https://www.rfc-editor.org/rfc/rfc6585.html#section-4"
     ]
   },
   {
